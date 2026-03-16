@@ -2,8 +2,12 @@ import { fetchPosts } from '@/services/publicService';
 import siteConfig from '@/config/siteConfig';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+<<<<<<< HEAD
+import NewsList from '@/components/news/NewsList';
+=======
 import Link from 'next/link';
 import { CalendarDays, ArrowRight } from 'lucide-react';
+>>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
 
 export const revalidate = 60;
 
@@ -22,14 +26,26 @@ export default async function TinTucPage() {
     <>
       <Navbar config={config} />
       <main>
+<<<<<<< HEAD
+        <div className="bg-gradient-to-r from-blue-600 to-violet-600 text-white pt-20 pb-16">
+          <div className="max-w-7xl mx-auto px-6 text-center animate-fade-in-up">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Tin tức</h1>
+            <p className="text-blue-100 text-base max-w-2xl mx-auto">
+              Cập nhật kiến thức và thông tin mới nhất từ Vitechs
+            </p>
+=======
         <div className="bg-primary-700 text-white py-10">
           <div className="max-w-7xl mx-auto px-4">
             <h1 className="text-3xl font-bold">Tin tức</h1>
             <p className="mt-1 text-primary-200 text-sm">Cập nhật kiến thức và thông tin mới nhất từ Vitechs</p>
+>>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-12">
+<<<<<<< HEAD
+          <NewsList posts={posts} />
+=======
           {posts.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               <p className="text-4xl mb-3">📰</p>
@@ -70,6 +86,7 @@ export default async function TinTucPage() {
               ))}
             </div>
           )}
+>>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
         </div>
       </main>
       <Footer config={config} />

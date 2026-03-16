@@ -14,6 +14,7 @@ interface Stats {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({ products: 0, contacts: 0, posts: 0, categories: 0 });
+
   useEffect(() => {
     Promise.all([
       adminGet('/products?limit=1').catch(() => ({ pagination: { total: 0 } })),

@@ -16,13 +16,7 @@ export default async function LienHePage() {
   return (
     <>
       <Navbar config={config} />
-      <main>
-        <div className="bg-primary-700 text-white py-10">
-          <div className="max-w-7xl mx-auto px-4">
-            <h1 className="text-3xl font-bold">Liên hệ</h1>
-            <p className="mt-1 text-primary-200 text-sm">Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
-          </div>
-        </div>
+      <main className="bg-white min-h-screen">
         <LienHeClient />
       </main>
       <Footer config={config} />

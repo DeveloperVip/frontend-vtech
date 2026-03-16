@@ -20,6 +20,37 @@ module.exports = {
           900: '#0d3283',
           950: '#081e52',
         },
+<<<<<<< HEAD
+        violet: {
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+        },
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, #164DBC 0%, #3b5fd4 40%, #7c3aed 100%)',
+        'brand-gradient-r': 'linear-gradient(to right, #164DBC, #7c3aed)',
+      },
+      boxShadow: {
+        'glow-blue': '0 4px 24px rgba(22, 77, 188, 0.35)',
+        'glow-violet': '0 4px 24px rgba(124, 58, 237, 0.25)',
+        'card': '0 2px 16px rgba(0,0,0,0.08)',
+        'card-hover': '0 8px 32px rgba(0,0,0,0.14)',
+      },
+      borderRadius: {
+        'pill': '9999px',
+      },
+      keyframes: {
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        }
+      },
+      animation: {
+        wiggle: 'wiggle 0.3s ease-in-out infinite',
+=======
+>>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
       },
       typography: {
         DEFAULT: {
