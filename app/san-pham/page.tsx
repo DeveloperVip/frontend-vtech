@@ -23,12 +23,19 @@ export default async function SanPhamPage() {
       <Navbar config={config} />
       <main>
         {/* Page header */}
+<<<<<<< HEAD
         <div className="bg-gradient-to-r from-blue-600 to-violet-600 text-white pt-20 pb-16">
           <div className="max-w-7xl mx-auto px-6 text-center animate-fade-in-up">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Tất Cả Sản Phẩm</h1>
             <p className="text-blue-100 text-base max-w-2xl mx-auto">
               Thiết bị đào tạo – Giáo cụ trực quan chuyên nghiệp
             </p>
+=======
+        <div className="bg-primary-700 text-white py-10">
+          <div className="max-w-7xl mx-auto px-4">
+            <h1 className="text-3xl font-bold">Sản phẩm</h1>
+            <p className="mt-1 text-primary-200 text-sm">Thiết bị đào tạo – Giáo cụ trực quan chuyên nghiệp</p>
+>>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
           </div>
         </div>
 
