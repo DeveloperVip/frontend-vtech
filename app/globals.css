@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full rounded-xl border border-gray-200 bg-white px-5 py-3.5 text-[15px] shadow-sm placeholder-gray-400 transition-all duration-300 focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10 hover:border-gray-300 disabled:cursor-not-allowed disabled:bg-gray-50;
+  }
+
+  .input-error {
+    @apply border-primary-400 focus:border-primary-400 focus:ring-primary-400/30;
+  }
+
+  .error-message {
+    @apply mt-1 text-xs text-primary-500;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-8 py-3.5 text-[15px] font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#1d4ed8] hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#2563EB]/20 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+}
+
+/* CKEditor 5 custom styles */
+.ckeditor-wrapper .ck-editor__editable {
+  min-height: 400px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.ckeditor-wrapper .ck.ck-editor {
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  overflow: hidden;
+}
+
+.ckeditor-wrapper .ck.ck-toolbar {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-wrap: wrap;
+}
+
+.ckeditor-wrapper .ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-focused {
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
+/* ── Prose / CKEditor content render (phía người dùng) ── */
+.prose figure {
+  margin: 1.5rem 0;
+}
+
+/* CKEditor wrap table trong <figure class="table"> – giữ nguyên width và căn giữa */
+.prose figure.table {
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose figure.table table {
+  margin: 0;
+}
+
+/* CKEditor image căn giữa: figure.image / figure.image-style-align-center */
+.prose figure.image,
+.prose figure.image-style-align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/* CKEditor image căn trái/phải */
+.prose figure.image-style-align-left {
+  float: left;
+  margin-right: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose figure.image-style-align-right {
+  float: right;
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose figure img {
+  margin: 0 auto;
+}
+
+.prose figure figcaption {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.4rem;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.prose table th,
+.prose table td {
+  border: 1px solid #d1d5db;
+  padding: 0.6rem 0.8rem;
+  /* KHÔNG set text-align ở đây để giữ nguyên alignment từ CKEditor */
+}
+
+.prose table th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.prose blockquote {
+  border-left: 4px solid #164DBC;
+  background: #eef3fd;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #374151;
+  font-style: italic;
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+.prose pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.prose code:not(pre code) {
+  background: #f1f5f9;
+  color: #164DBC;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.875em;
+}
+
+.prose hr {
+  border-color: #e5e7eb;
+  margin: 2rem 0;
+}
+
+.prose img {
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+  height: auto;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
