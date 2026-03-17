@@ -20,7 +20,6 @@ module.exports = {
           900: '#0d3283',
           950: '#081e52',
         },
-<<<<<<< HEAD
         violet: {
           400: '#a78bfa',
           500: '#8b5cf6',
@@ -49,8 +48,6 @@ module.exports = {
       },
       animation: {
         wiggle: 'wiggle 0.3s ease-in-out infinite',
-=======
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
       },
       typography: {
         DEFAULT: {

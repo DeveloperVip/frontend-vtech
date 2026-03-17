@@ -22,11 +22,7 @@ const siteConfig = {
 
   // ── Banner trang chủ ──────────────────────────────────────────
   hero_title:    'Giải pháp kỹ thuật chuyên nghiệp',
-<<<<<<< HEAD
   hero_subtitle: 'Chuyên cung cấp thiết bị đào tạo, thiết bị dạy nghề, đáp ứng nhu cầu thực tiễn và chuyên nghiệp.',
-=======
-  hero_subtitle: 'Chuyên cung cấp thiết bị và dịch vụ kỹ thuật cho ngành ô tô, điện lạnh và điện công nghiệp.',
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
   hero_image:    '',
   hero_cta_text: 'Xem sản phẩm',
   hero_cta_link: '/san-pham',

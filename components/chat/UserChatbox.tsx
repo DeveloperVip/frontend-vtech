@@ -129,7 +129,6 @@ export default function UserChatbox() {
 
   if (!isOpen) {
     return (
-<<<<<<< HEAD
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
         {/* Zalo */}
         <a
@@ -169,20 +168,11 @@ export default function UserChatbox() {
           <MessageCircle size={26} className="text-white" />
         </button>
       </div>
-=======
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 bg-primary-700 text-white w-14 h-14 rounded-full shadow-lg hover:bg-primary-800 transition-all hover:scale-110 flex items-center justify-center"
-      >
-        <MessageCircle size={24} />
-      </button>
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
     );
   }
 
   return (
     <div
-<<<<<<< HEAD
       className={`fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 transition-all ${isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
         }`}
     >
@@ -211,29 +201,6 @@ export default function UserChatbox() {
             className="hover:bg-white/20 p-1.5 rounded-full transition-colors"
           >
             <Minimize2 size={15} />
-=======
-      className={`fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 transition-all ${
-        isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
-      }`}
-    >
-      {/* Header */}
-      <div className="bg-primary-700 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <MessageCircle size={20} />
-          <div>
-            <p className="font-semibold text-sm">Hỗ trợ trực tuyến</p>
-            <p className="text-xs text-primary-100">
-              {isJoined ? 'Đang kết nối...' : 'Bắt đầu trò chuyện'}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            className="hover:bg-primary-600 p-1 rounded"
-          >
-            <Minimize2 size={16} />
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
           </button>
           <button
             onClick={() => {
@@ -241,15 +208,9 @@ export default function UserChatbox() {
               socketService.disconnect();
               setIsConnected(false);
             }}
-<<<<<<< HEAD
             className="hover:bg-white/20 p-1.5 rounded-full transition-colors"
           >
             <X size={15} />
-=======
-            className="hover:bg-primary-600 p-1 rounded"
-          >
-            <X size={16} />
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
           </button>
         </div>
       </div>
@@ -257,11 +218,7 @@ export default function UserChatbox() {
       {!isMinimized && (
         <>
           {!isJoined ? (
-<<<<<<< HEAD
 
-=======
-            // Join Form
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
             <div className="p-6 flex flex-col gap-4">
               <p className="text-sm text-gray-600">
                 Vui lòng nhập thông tin để bắt đầu trò chuyện với chúng tôi
@@ -292,11 +249,6 @@ export default function UserChatbox() {
             </div>
           ) : (
             <>
-<<<<<<< HEAD
-
-=======
-              {/* Messages */}
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
               <div className="flex-1 overflow-y-auto p-4 space-y-3 h-[480px]">
                 {messages.length === 0 ? (
                   <div className="text-center text-gray-400 text-sm mt-10">
@@ -310,22 +262,12 @@ export default function UserChatbox() {
                       className={`flex ${msg.senderType === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-<<<<<<< HEAD
                         className={`max-w-[75%] px-4 py-2 rounded-2xl ${msg.senderType === 'user'
                           ? 'bg-primary-700 text-white'
                           : msg.senderName === 'System'
                             ? 'bg-gray-100 text-gray-600 text-center text-xs'
                             : 'bg-gray-100 text-gray-800'
                           }`}
-=======
-                        className={`max-w-[75%] px-4 py-2 rounded-2xl ${
-                          msg.senderType === 'user'
-                            ? 'bg-primary-700 text-white'
-                            : msg.senderName === 'System'
-                            ? 'bg-gray-100 text-gray-600 text-center text-xs'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
                       >
                         {msg.senderType === 'admin' && msg.senderName !== 'System' && (
                           <p className="text-xs font-semibold mb-1 text-primary-700">
@@ -340,38 +282,23 @@ export default function UserChatbox() {
                 <div ref={messagesEndRef} />
               </div>
 
-<<<<<<< HEAD
 
               <div className="border-t border-gray-100 p-3 flex gap-2 items-center">
-=======
-              {/* Input */}
-              <div className="border-t p-3 flex gap-2">
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
                 <input
                   type="text"
                   placeholder="Nhập tin nhắn..."
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-<<<<<<< HEAD
                   className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-400"
-=======
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary-400"
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim()}
-<<<<<<< HEAD
                   className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
                   style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
                 >
                   <Send size={16} className="text-white" />
-=======
-                  className="bg-primary-700 text-white p-2 rounded-lg hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send size={18} />
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
                 </button>
               </div>
             </>

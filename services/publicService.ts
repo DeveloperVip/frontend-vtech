@@ -6,8 +6,16 @@ export const fetchProducts = async (params?: Record<string, string | number>) =>
 };
 
 export const fetchProductBySlug = async (slug: string) => {
-  const res = await apiClient.get(`/products/slug/${slug}`);
-  return res.data.data;
+  try {
+    const res = await apiClient.get(`/products/slug/${slug}`);
+    if (!res.data?.data) {
+      throw new Error("Product not found");
+    }
+    return res.data.data;
+  } catch (error) {
+    console.error("Fetch product failed:", error);
+    return null;
+  }
 };
 
 export const fetchCategories = async () => {

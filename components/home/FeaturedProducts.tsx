@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Phone } from 'lucide-react';
+import { Phone, ShoppingCart } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -59,7 +59,6 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
                     <span className={`font-bold text-sm ${p.priceType === 'contact' ? 'text-gray-400' : 'text-primary-700'}`}>
                       {formatPrice(p.price, p.priceType)}
                     </span>
-<<<<<<< HEAD
                     {/* Cart / contact button – circular like Figma */}
                     <button
                       className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md hover:opacity-90 transition flex-shrink-0"
@@ -68,13 +67,6 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
                     >
                       {p.priceType === 'contact' ? <Phone size={13} /> : <ShoppingCart size={13} />}
                     </button>
-=======
-                    {p.priceType === 'contact' && (
-                      <span className="flex items-center gap-1 text-xs text-white bg-primary-700 px-2 py-1 rounded-full">
-                        <Phone size={10} /> Báo giá
-                      </span>
-                    )}
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
                   </div>
                 </div>
               </Link>
@@ -82,16 +74,11 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
           </div>
         )}
 
-<<<<<<< HEAD
         {/* Mobile view all */}
         <div className="text-center mt-8 md:hidden">
           <Link href="/san-pham"
             className="inline-flex items-center gap-2 text-sm font-bold text-white px-6 py-2.5 rounded-full shadow-glow-blue"
             style={{ background: 'linear-gradient(90deg,#164DBC,#7c3aed)' }}>
-=======
-        <div className="text-center mt-8 md:hidden">
-          <Link href="/san-pham" className="text-primary-700 text-sm font-semibold hover:underline">
->>>>>>> 240eea5fbb751649464404f57cb0f04f70f098f9
             Xem tất cả sản phẩm →
           </Link>
         </div>
