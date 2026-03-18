@@ -3,6 +3,7 @@ import siteConfig from '@/config/siteConfig';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductsClient from '@/components/products/ProductsClient';
+import { ProductsService } from '@/src/api/generated';
 
 export const revalidate = 60;
 
@@ -15,8 +16,9 @@ export default async function SanPhamPage() {
   const config = siteConfig;
   const [categoriesData, productsData] = await Promise.all([
     fetchCategories().catch(() => []),
-    fetchProducts({ limit: 12, page: 1 }).catch(() => ({ data: [], pagination: { total: 0, totalPages: 1 } })),
+    ProductsService.getProducts(),
   ]);
+  console.log("🚀 ~ SanPhamPage ~ productsData:", productsData)
 
   return (
     <>

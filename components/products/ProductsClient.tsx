@@ -5,6 +5,8 @@ import { fetchProducts } from '@/services/publicService';
 import Link from 'next/link';
 import { Phone, Search, SlidersHorizontal, ArrowRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProductsService } from '@/src/api/generated';
+import ProductImage360 from './components/product-image-360';
 
 interface Product {
   id: number;
@@ -59,7 +61,8 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
   const load = async (params: Record<string, string | number>) => {
     setLoading(true);
     try {
-      const res = await fetchProducts(params);
+      const res = await ProductsService.getProducts();
+      console.log("🚀 ~ load ~ res:", res)
       setProducts(res.data || []);
       setPagination(res.pagination || pagination);
     } finally {
@@ -175,7 +178,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
           <p className="text-gray-500">Không tìm thấy sản phẩm nào phù hợp</p>
         </div>
       ) : (
-        <motion.div 
+        <motion.div
           initial="hidden"
           animate="visible"
           variants={{
@@ -198,7 +201,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
             >
               <Link href={`/san-pham/${p.slug}`} className="group block h-full">
                 <div className="bg-white rounded-2xl border border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
-                  
+
                   {/* Ảnh Sản Phẩm & Badges */}
                   <div className="relative aspect-square md:aspect-[4/3] bg-gray-50 overflow-hidden">
                     {p.thumbnail ? (
@@ -206,7 +209,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">Chưa có ảnh</div>
                     )}
-                    
+
                     <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
                       {p.category ? (
                         <span className="bg-white/70 backdrop-blur-md text-gray-800 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-white/20">
@@ -224,7 +227,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
                     <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
                       {p.name}
                     </h3>
-                    
+
                     <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-6 flex-1">
                       {p.shortDescription || `Khám phá ngay sản phẩm ${p.name.toLowerCase()} với chất lượng tuyệt vời, độ bền cao và thiết kế sang trọng nhất.`}
                     </p>
@@ -249,7 +252,27 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
           ))}
         </motion.div>
       )}
-
+      <ProductImage360 
+      images360={[
+        "/slider/360-product-photography-575px01.jpg",
+        "/slider/360-product-photography-575px02.jpg",
+        "/slider/360-product-photography-575px03.jpg",
+        "/slider/360-product-photography-575px04.jpg",
+        "/slider/360-product-photography-575px06.jpg",
+        "/slider/360-product-photography-575px08.jpg",
+        "/slider/360-product-photography-575px09.jpg",
+        "/slider/360-product-photography-575px11.jpg",
+        "/slider/360-product-photography-575px12.jpg",
+        "/slider/360-product-photography-575px14.jpg",
+        "/slider/360-product-photography-575px16.jpg",
+        "/slider/360-product-photography-575px18.jpg",
+        "/slider/360-product-photography-575px20.jpg",
+        "/slider/360-product-photography-575px22.jpg",
+        "/slider/360-product-photography-575px23.jpg",
+        "/slider/360-product-photography-575px25.jpg",
+        "/slider/360-product-photography-575px27.jpg",
+      ]} 
+      />
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-16 pb-10">
@@ -257,11 +280,10 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
             <button
               key={i}
               onClick={() => handlePage(i + 1)}
-              className={`w-10 h-10 rounded-full text-sm font-semibold transition-all ${
-                pagination.page === i + 1
+              className={`w-10 h-10 rounded-full text-sm font-semibold transition-all ${pagination.page === i + 1
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
                   : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600'
-              }`}
+                }`}
             >
               {i + 1}
             </button>

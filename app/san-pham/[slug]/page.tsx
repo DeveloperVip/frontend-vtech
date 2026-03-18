@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 import { notFound } from 'next/navigation';
 import { Phone, Tag, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ProductsService } from '@/src/api/generated';
 
 export const revalidate = 60;
 
@@ -14,7 +15,8 @@ interface Props {
 
 export default async function ProductDetailPage({ params }: Props) {
   const config = siteConfig;
-  const product = await fetchProductBySlug(params.slug).catch(() => null);
+  const product = await ProductsService.getProducts();
+  console.log("🚀 ~ ProductDetailPage ~ product:", product)
 
   if (!product) return notFound();
 

@@ -749,6 +749,1298 @@
         }
       }
     },
+    "/products/{productId}/additional-info": {
+      "get": {
+        "summary": "Lấy danh sách thông tin bổ sung của sản phẩm",
+        "tags": [
+          "Product Additional Info"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "isActive",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "post": {
+        "summary": "Thêm thông tin bổ sung cho sản phẩm",
+        "tags": [
+          "Product Additional Info"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "sortOrder": {
+                    "type": "integer"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công"
+          }
+        }
+      }
+    },
+    "/product-additional-infos/{id}": {
+      "put": {
+        "summary": "Cập nhật thông tin bổ sung",
+        "tags": [
+          "Product Additional Info"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "sortOrder": {
+                    "type": "integer"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa thông tin bổ sung",
+        "tags": [
+          "Product Additional Info"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Xóa thành công"
+                    },
+                    "data": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy thông tin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Không tìm thấy thông tin"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{productId}/attributes": {
+      "get": {
+        "summary": "Lấy danh sách thuộc tính của sản phẩm",
+        "tags": [
+          "Product Attributes"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "post": {
+        "summary": "Thêm thuộc tính cho sản phẩm",
+        "tags": [
+          "Product Attributes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "value"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công"
+          }
+        }
+      }
+    },
+    "/product-attributes/{id}": {
+      "put": {
+        "summary": "Cập nhật thuộc tính",
+        "tags": [
+          "Product Attributes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Màu sắc"
+                  },
+                  "value": {
+                    "type": "string",
+                    "example": "Đỏ"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Cập nhật thuộc tính thành công"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Màu sắc"
+                        },
+                        "value": {
+                          "type": "string",
+                          "example": "Đỏ"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy thuộc tính",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Không tìm thấy thuộc tính"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa thuộc tính",
+        "tags": [
+          "Product Attributes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        }
+      }
+    },
+    "/products/{productId}/images": {
+      "get": {
+        "summary": "Lấy danh sách ảnh của sản phẩm",
+        "tags": [
+          "Product Images"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "thumbnail",
+                "gallery",
+                360
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "post": {
+        "summary": "Thêm ảnh cho sản phẩm",
+        "tags": [
+          "Product Images"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "thumbnail",
+                      "gallery",
+                      360
+                    ]
+                  },
+                  "width": {
+                    "type": "integer"
+                  },
+                  "height": {
+                    "type": "integer"
+                  },
+                  "sortOrder": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công"
+          }
+        }
+      }
+    },
+    "/product-images/{id}": {
+      "put": {
+        "summary": "Cập nhật thông tin ảnh",
+        "tags": [
+          "Product Images"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "example": "/images/product1.jpg"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "thumbnail"
+                  },
+                  "width": {
+                    "type": "integer",
+                    "example": 575
+                  },
+                  "height": {
+                    "type": "integer",
+                    "example": 400
+                  },
+                  "sortOrder": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Cập nhật thông tin ảnh thành công"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "url": {
+                          "type": "string",
+                          "example": "/images/product1.jpg"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "thumbnail"
+                        },
+                        "width": {
+                          "type": "integer",
+                          "example": 575
+                        },
+                        "height": {
+                          "type": "integer",
+                          "example": 400
+                        },
+                        "sortOrder": {
+                          "type": "integer",
+                          "example": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy ảnh",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Không tìm thấy ảnh"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa ảnh",
+        "tags": [
+          "Product Images"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        }
+      }
+    },
+    "/products/{productId}/like": {
+      "post": {
+        "summary": "Thích hoặc Bỏ thích sản phẩm (Toggle Like)",
+        "tags": [
+          "Product Likes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "get": {
+        "summary": "Kiểm tra xem user hiện tại đã thích sản phẩm chưa",
+        "tags": [
+          "Product Likes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      }
+    },
+    "/products/{productId}/model-3d": {
+      "get": {
+        "summary": "Lấy mô hình 3D của sản phẩm",
+        "tags": [
+          "Product Model 3D"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "put": {
+        "summary": "Thêm hoặc Cập nhật mô hình 3D cho sản phẩm",
+        "tags": [
+          "Product Model 3D"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "modelUrl"
+                ],
+                "properties": {
+                  "modelUrl": {
+                    "type": "string",
+                    "example": "https://example.com/3d/model.gltf"
+                  },
+                  "textureUrl": {
+                    "type": "string",
+                    "example": "https://example.com/3d/texture.png"
+                  },
+                  "poster": {
+                    "type": "string",
+                    "example": "https://example.com/3d/poster.png"
+                  },
+                  "fileSize": {
+                    "type": "integer",
+                    "example": 1234567
+                  },
+                  "images360": {
+                    "type": "array",
+                    "description": "Mảng URL ảnh 360°",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "example": [
+                      "https://example.com/360/01.png",
+                      "https://example.com/360/02.png",
+                      "https://example.com/360/03.png"
+                    ]
+                  },
+                  "format": {
+                    "type": "string",
+                    "description": "Định dạng file model 3D (glb, gltf, fbx...)",
+                    "example": "glb"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "productId": {
+                          "type": "integer",
+                          "example": 101
+                        },
+                        "modelUrl": {
+                          "type": "string",
+                          "example": "https://example.com/3d/model.gltf"
+                        },
+                        "textureUrl": {
+                          "type": "string",
+                          "example": "https://example.com/3d/texture.png"
+                        },
+                        "poster": {
+                          "type": "string",
+                          "example": "https://example.com/3d/poster.png"
+                        },
+                        "fileSize": {
+                          "type": "integer",
+                          "example": 1234567
+                        },
+                        "images360": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": [
+                            "https://example.com/360/01.png",
+                            "https://example.com/360/02.png",
+                            "https://example.com/360/03.png"
+                          ]
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "glb"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy sản phẩm",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Không tìm thấy sản phẩm"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa mô hình 3D của sản phẩm",
+        "tags": [
+          "Product Model 3D"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        }
+      }
+    },
+    "/products/{productId}/relations": {
+      "get": {
+        "summary": "Lấy danh sách sản phẩm liên quan/gợi ý",
+        "tags": [
+          "Product Relations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "related",
+                "similar",
+                "upsell"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "post": {
+        "summary": "Thêm sản phẩm liên quan",
+        "tags": [
+          "Product Relations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "relatedProductId",
+                  "type"
+                ],
+                "properties": {
+                  "relatedProductId": {
+                    "type": "integer"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "related",
+                      "similar",
+                      "upsell"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công"
+          }
+        }
+      }
+    },
+    "/product-relations/{id}": {
+      "delete": {
+        "summary": "Xóa một liên kết sản phẩm",
+        "tags": [
+          "Product Relations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        }
+      }
+    },
+    "/products/{productId}/reviews": {
+      "get": {
+        "summary": "Lấy danh sách đánh giá của sản phẩm",
+        "tags": [
+          "Product Reviews"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rating",
+            "schema": {
+              "type": "integer",
+              "description": "Lọc theo số sao"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      },
+      "post": {
+        "summary": "Thêm đánh giá cho sản phẩm",
+        "tags": [
+          "Product Reviews"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "userName",
+                  "email",
+                  "rating",
+                  "content"
+                ],
+                "properties": {
+                  "userName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "width": {
+                          "type": "integer"
+                        },
+                        "height": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công"
+          }
+        }
+      }
+    },
+    "/product-reviews/{id}": {
+      "put": {
+        "summary": "Cập nhật đánh giá",
+        "tags": [
+          "Product Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userName": {
+                    "type": "string",
+                    "example": "Nguyen Van A"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "a@example.com"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "example": 5
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "Sản phẩm rất tốt"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Cập nhật đánh giá thành công"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "userName": {
+                          "type": "string",
+                          "example": "Nguyen Van A"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "a@example.com"
+                        },
+                        "rating": {
+                          "type": "integer",
+                          "example": 5
+                        },
+                        "content": {
+                          "type": "string",
+                          "example": "Sản phẩm rất tốt"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy đánh giá",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Không tìm thấy đánh giá"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa đánh giá",
+        "tags": [
+          "Product Reviews"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        }
+      }
+    },
     "/products": {
       "get": {
         "summary": "Lấy danh sách sản phẩm",
@@ -1063,7 +2355,125 @@
     },
     "/upload": {
       "post": {
-        "summary": "Upload ảnh",
+        "summary": "Upload ảnh (có kiểm tra kích thước)",
+        "description": "Upload file ảnh lên server.\n- Giới hạn dung lượng: 5MB\n- Chỉ chấp nhận: jpg, png, webp, gif, svg\n- Giới hạn kích thước ảnh: MAX_WIDTH x MAX_HEIGHT\n",
+        "tags": [
+          "Upload"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File ảnh cần upload"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "url": {
+                      "type": "string",
+                      "example": "http://localhost:5000/uploads/1700000000-123456.png"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "example": "1700000000-123456.png"
+                    },
+                    "width": {
+                      "type": "integer",
+                      "example": 800
+                    },
+                    "height": {
+                      "type": "integer",
+                      "example": 600
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi validate (file không hợp lệ hoặc quá kích thước)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "success": false,
+                    "message": "Ảnh vượt quá kích thước cho phép"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Không có quyền (chưa đăng nhập)"
+          },
+          "500": {
+            "description": "Lỗi server"
+          }
+        }
+      }
+    },
+    "/upload/{filename}": {
+      "delete": {
+        "summary": "Xóa file đã upload",
+        "tags": [
+          "Upload"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "filename",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1700000000-123456.png"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        }
+      }
+    },
+    "/upload/upload-cloud": {
+      "post": {
+        "summary": "Upload ảnh lên Cloudinary",
+        "description": "Upload ảnh lên Cloudinary (cloud storage).\n- Giới hạn dung lượng: 5MB\n- Auto resize theo MAX_WIDTH x MAX_HEIGHT\n- Auto optimize + convert webp\n",
         "tags": [
           "Upload"
         ],
@@ -1098,9 +2508,23 @@
         }
       }
     },
-    "/upload/{filename}": {
+    "/upload/upload-cloud/{public_id}": {
       "delete": {
-        "summary": "Xóa file đã upload",
+        "summary": "Xóa ảnh trên Cloudinary",
+        "tags": [
+          "Upload"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/upload/upload-cloud/multi": {
+      "post": {
+        "summary": "Upload nhiều ảnh lên Cloudinary (24-36 ảnh)",
+        "description": "Upload nhiều ảnh dùng cho 360° product view.\n- Giới hạn mỗi ảnh: 5MB\n- Auto resize + convert webp\n",
         "tags": [
           "Upload"
         ],
@@ -1109,20 +2533,57 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "filename",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "1700000000-123456.png"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Xóa thành công"
+            "description": "Upload thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string"
+                          },
+                          "public_id": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
