@@ -113,7 +113,6 @@
 .prose table td {
   border: 1px solid #d1d5db;
   padding: 0.6rem 0.8rem;
-  /* KHÔNG set text-align ở đây để giữ nguyên alignment từ CKEditor */
 }
 
 .prose table th {

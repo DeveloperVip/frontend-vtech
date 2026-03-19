@@ -22,7 +22,7 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Sản phẩm nổi bật</h2>
+            <h2 className="text-3xl font-bold text-blue-900">Sản phẩm nổi bật</h2>
             <div className="w-16 h-1 bg-primary-700 mt-2 rounded" />
           </div>
           <Link href="/san-pham"
@@ -37,11 +37,11 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.map((p) => (
               <Link key={p.id} href={`/san-pham/${p.slug}`}
-                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
-                <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all">
+                <div className="aspect-square bg-gray-100 overflow-hidden">
                   {p.thumbnail ? (
                     <img src={p.thumbnail} alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">
                       Chưa có ảnh
@@ -59,7 +59,6 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
                     <span className={`font-bold text-sm ${p.priceType === 'contact' ? 'text-gray-400' : 'text-primary-700'}`}>
                       {formatPrice(p.price, p.priceType)}
                     </span>
-                    {/* Cart / contact button – circular like Figma */}
                     <button
                       className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-md hover:opacity-90 transition flex-shrink-0"
                       style={{ background: 'linear-gradient(135deg,#164DBC,#7c3aed)' }}

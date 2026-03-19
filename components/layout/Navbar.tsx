@@ -26,7 +26,10 @@ export default function Navbar({ config }: { config?: Record<string, string> }) 
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm relative">
+    <header 
+      className="sticky top-0 z-50 bg-white relative" 
+      style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
+    >
 
       {/* Main navbar */}
       <div className="max-w-7xl mx-auto px-4">

@@ -1,15 +1,14 @@
-import { fetchPostBySlug } from '@/services/publicService';
 import siteConfig from '@/config/siteConfig';
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { notFound } from 'next/navigation';
 import { CalendarDays, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { fetchPostBySlug } from '@/services/publicService';
 import type { Metadata } from 'next';
 
 export const revalidate = 60;
 
-type Props = { params: { slug: string } };
+type Props = { params: { locale: string; slug: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await fetchPostBySlug(params.slug).catch(() => null);
@@ -20,34 +19,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function TinTucDetailPage({ params }: Props) {
+export default async function TinTucDetailLocalePage({ params }: Props) {
   const config = siteConfig;
   const post = await fetchPostBySlug(params.slug).catch(() => null);
-
   if (!post) notFound();
 
   return (
     <>
-      <Navbar config={config} />
       <main className="max-w-4xl mx-auto px-4 py-10">
-        <Link href="/tin-tuc"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-700 mb-6 transition-colors">
+        <Link href={`/tin-tuc`}
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-700 mb-6 transition-colors font-medium">
           <ArrowLeft size={14} /> Quay lại tin tức
         </Link>
-
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-snug mb-3">{post.title}</h1>
-
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
           <CalendarDays size={14} />
           {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
           {post.author?.fullName && <span>· {post.author.fullName}</span>}
         </div>
-
         {post.thumbnail && (
-          <img src={post.thumbnail} alt={post.title}
-            className="w-full rounded-2xl mb-8 object-cover max-h-96" />
+          <img src={post.thumbnail} alt={post.title} className="w-full rounded-2xl mb-8 object-cover max-h-96" />
         )}
-
         <article
           className="prose prose-lg prose-gray max-w-none
             prose-headings:font-bold prose-headings:text-gray-900
@@ -58,10 +50,7 @@ export default async function TinTucDetailPage({ params }: Props) {
             prose-blockquote:border-primary-700 prose-blockquote:bg-primary-50 prose-blockquote:rounded-r-lg prose-blockquote:py-1
             prose-ul:list-disc prose-ol:list-decimal
             prose-li:text-gray-700
-            prose-img:rounded-xl prose-img:shadow-md prose-img:mx-auto
-            prose-table:border-collapse prose-th:bg-gray-100 prose-th:border prose-th:border-gray-300 prose-td:border prose-td:border-gray-200
-            prose-code:bg-gray-100 prose-code:text-primary-700 prose-code:rounded prose-code:px-1
-            prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl"
+            prose-img:rounded-xl prose-img:shadow-md prose-img:mx-auto"
           dangerouslySetInnerHTML={{ __html: post.content || '' }}
         />
       </main>

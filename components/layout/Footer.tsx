@@ -3,19 +3,24 @@ import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 
 export default function Footer({ config }: { config?: Record<string, string> }) {
   return (
-    <footer className="bg-gradient-to-b from-[#f8faff] to-[#eef3fd] text-gray-600 pt-16 pb-8 border-t border-[#d5e2fa]">
+    <footer 
+      className="text-gray-600 pt-16 pb-8 border-t border-[#d5e2fa]"
+      style={{ 
+        background: 'linear-gradient(90deg,rgba(232, 232, 232, 1) 0%, rgba(204, 217, 237, 1) 0%)' 
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3 mb-5">
-            <img 
-              src="/vitechs.png" 
-              alt="VITECHS Logo" 
-              className="h-12 w-auto object-contain drop-shadow-sm" 
+            <img
+              src="/vitechs.png"
+              alt="VITECHS Logo"
+              className="h-12 w-auto object-contain drop-shadow-sm"
             />
             <div>
               <p className="font-extrabold text-[#0B1527] text-[17px] leading-tight tracking-[0.02em]">VITECHS., JSC</p>
-              <p className="text-[#2563EB] font-medium text-[11px] uppercase tracking-wider mt-1">Công ty CP ĐT TM & DV <br className="hidden lg:block"/>Công nghệ Việt</p>
+              <p className="text-[#2563EB] font-medium text-[11px] uppercase tracking-wider mt-1">Công ty CP ĐT TM & DV <br className="hidden lg:block" />Công nghệ Việt</p>
             </div>
           </div>
           <p className="text-[14px] text-gray-500 leading-relaxed pr-6">

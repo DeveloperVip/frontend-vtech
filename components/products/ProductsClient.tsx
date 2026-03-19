@@ -200,12 +200,12 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
               <Link href={`/san-pham/${p.slug}`} className="group block h-full">
-                <div className="bg-white rounded-2xl border border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 overflow-hidden h-full flex flex-col">
+                <div className="bg-white rounded-2xl border border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full flex flex-col">
 
                   {/* Ảnh Sản Phẩm & Badges */}
-                  <div className="relative aspect-square md:aspect-[4/3] bg-gray-50 overflow-hidden">
+                  <div className="relative aspect-square bg-gray-50 overflow-hidden">
                     {p.thumbnail ? (
-                      <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
+                      <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">Chưa có ảnh</div>
                     )}
@@ -216,7 +216,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
                           {p.category.name}
                         </span>
                       ) : <span />}
-                      <span className="bg-[#00D1B2] text-white px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-white/10">
+                      <span className="bg-emerald-100/80 backdrop-blur-md text-emerald-600 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-emerald-200/50">
                         Còn Hàng
                       </span>
                     </div>
@@ -224,7 +224,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
 
                   {/* Nội dung Card */}
                   <div className="p-6 flex flex-col flex-1 relative">
-                    <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 line-clamp-2">
                       {p.name}
                     </h3>
 
@@ -235,13 +235,13 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
                     <div className="flex items-end justify-between mt-auto">
                       <div className="flex flex-col">
                         <span className="text-[11px] text-gray-400 uppercase font-bold tracking-wider mb-1">Giá bán</span>
-                        <span className={`font-extrabold text-[#FF8A00] text-lg`}>
+                        <span className={`font-extrabold text-blue-600 text-lg`}>
                           {formatPrice(p.price, p.priceType)}
                         </span>
                       </div>
 
-                      <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
-                        <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                      <div className="group/btn w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-300 hover:scale-110">
+                        <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>

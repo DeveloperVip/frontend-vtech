@@ -38,14 +38,14 @@ const features = [
 export default function GoalSection() {
   return (
     <section className="py-24 relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%)' }}>
+      style={{ background: 'linear-gradient(90deg,rgba(69, 133, 230, 1) 0%, rgba(54, 132, 247, 1) 0%)' }}>
 
 
       <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl" />
 
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -68,14 +68,10 @@ export default function GoalSection() {
           </ul>
 
           <motion.div variants={itemLeft} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-fit">
-            <Link href="/lien-he"
-              className="inline-flex items-center justify-center bg-white text-blue-700 font-bold text-[15px] px-8 py-3.5 rounded-lg shadow-lg hover:shadow-[0_8px_30px_rgb(255,255,255,0.3)] transition-all duration-300">
-              Kết nối với Vitechs
-            </Link>
           </motion.div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -83,8 +79,8 @@ export default function GoalSection() {
           className="grid grid-cols-1 sm:grid-cols-2 gap-6"
         >
           {features.map((item, idx) => (
-            <motion.div 
-              variants={itemRight} 
+            <motion.div
+              variants={itemRight}
               key={idx}
               whileHover={{ scale: 1.03, y: -5 }}
               whileTap={{ scale: 0.98 }}

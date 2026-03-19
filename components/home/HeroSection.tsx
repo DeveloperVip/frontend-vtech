@@ -29,7 +29,7 @@ export default function HeroSection({ config }: { config?: Record<string, string
     <section
       className="relative min-h-[600px] flex items-center text-white overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, #2563EB 0%, #a855f7 50%, #d946ef 100%)'
+        background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)'
       }}
     >
       <div className="relative max-w-7xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
