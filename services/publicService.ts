@@ -38,12 +38,17 @@ export const fetchReviews = async (productId: number, params?: Record<string, st
   return res.data;
 };
 
+export const fetchRelatedProducts = async (productId: number, params?: Record<string, string | number>) => {
+  const res = await apiClient.get(`/products/${productId}/relations`, { params });
+  return res.data.data || [];
+};
+
 export const submitReview = async (productId: number, data: {
   userName: string;
   email: string;
   rating: number;
   content: string;
-  images?: string[];
+  images?: { url: string; width?: number; height?: number }[];
 }) => {
   const res = await apiClient.post(`/products/${productId}/reviews`, data);
   return res.data;

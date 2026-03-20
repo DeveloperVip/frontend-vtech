@@ -16,7 +16,7 @@ export default async function SanPhamPage() {
   const config = siteConfig;
   const [categoriesData, productsData] = await Promise.all([
     fetchCategories().catch(() => []),
-    ProductsService.getProducts(),
+    ProductsService.getProducts(1, 12),
   ]);
 
   return (
