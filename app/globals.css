@@ -173,6 +173,37 @@
   padding-left: 1.5rem;
 }
 
+/* ── Responsive iframe (Video YouTube / embed) ── */
+.prose iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+/* Wrap iframe in figure for CKEditor media embed */
+.prose figure.media {
+  margin: 1.5rem 0;
+}
+.prose figure.media iframe {
+  width: 100%;
+}
+
+/* ── Responsive table: scroll ngang trên mobile ── */
+.prose figure.table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Scrollbar hide utility ── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Hide scrollbar utility */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

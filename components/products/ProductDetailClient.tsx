@@ -270,10 +270,36 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               {show360 && product.images && product.images.length > 3 ? (
                 <ProductImage360 images360={product.images} />
               ) : (
-                <img
-                  src={activeImg}
-                  className="w-full h-full object-contain p-4"
-                  alt={product.name}
+                // <img
+                //   src={activeImg}
+                //   className="w-full h-full object-contain p-4"
+                //   alt={product.name}
+                // />
+                <ProductImage360
+                  images360={[
+                    "/slider/360-product-photography-575px01.jpg",
+                    "/slider/360-product-photography-575px02.jpg",
+                    "/slider/360-product-photography-575px03.jpg",
+                    "/slider/360-product-photography-575px04.jpg",
+                    "/slider/360-product-photography-575px06.jpg",
+                    "/slider/360-product-photography-575px08.jpg",
+                    "/slider/360-product-photography-575px09.jpg",
+                    "/slider/360-product-photography-575px11.jpg",
+                    "/slider/360-product-photography-575px12.jpg",
+                    "/slider/360-product-photography-575px14.jpg",
+                    "/slider/360-product-photography-575px16.jpg",
+                    "/slider/360-product-photography-575px18.jpg",
+                    "/slider/360-product-photography-575px20.jpg",
+                    "/slider/360-product-photography-575px22.jpg",
+                    "/slider/360-product-photography-575px23.jpg",
+                    "/slider/360-product-photography-575px25.jpg",
+                    "/slider/360-product-photography-575px27.jpg",
+                    "/slider/360-product-photography-575px29.jpg",
+                    "/slider/360-product-photography-575px31.jpg",
+                    "/slider/360-product-photography-575px34.jpg",
+                    "/slider/360-product-photography-575px35.jpg",
+                    "/slider/360-product-photography-575px36.jpg",
+                  ]}
                 />
               )}
 
@@ -508,6 +534,13 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               </div>
               <span className="text-sm font-bold text-gray-900">{ratingAvg.toFixed(1)}/5</span>
               <span className="text-sm text-gray-500">({reviewsCount} đánh giá)</span>
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} size={16} className={`${star <= Math.round(ratingAvg) ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
+                ))}
+              </div>
+              <span className="text-sm font-bold text-gray-900">{ratingAvg.toFixed(1)}/5</span>
+              <span className="text-sm text-gray-500">({reviewsCount} đánh giá)</span>
             </div>
           </div>
 
@@ -560,6 +593,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
             <div className="bg-gray-50 rounded-2xl p-6 md:p-8 h-fit shadow-inner ring-1 ring-black/5">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Gửi đánh giá của bạn</h3>
 
+
               {reviewSuccess ? (
                 <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl text-center border border-emerald-100">
                   <Check className="mx-auto mb-2" size={24} />
@@ -592,6 +626,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Họ tên</label>
+
                       <input
                         type="text"
                         required
@@ -673,6 +708,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                     </div>
                     <p className="text-[10px] text-gray-400 italic">Chọn tối đa 5 ảnh thực tế của sản phẩm.</p>
                   </div>
+
                   <button
                     type="submit"
                     disabled={submittingReview}

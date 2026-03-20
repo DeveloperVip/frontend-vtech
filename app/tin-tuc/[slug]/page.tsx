@@ -1,59 +1,193 @@
+import { fetchRelatedPosts, fetchPosts } from '@/services/publicService';
 import siteConfig from '@/config/siteConfig';
 import Footer from '@/components/layout/Footer';
+import ReadingProgressBar from '@/components/news/ReadingProgressBar';
+import NewsSidebar from '@/components/news/NewsSidebar';
 import { notFound } from 'next/navigation';
-import { CalendarDays, ArrowLeft } from 'lucide-react';
+import { CalendarDays, Clock, ArrowLeft, User, Tag } from 'lucide-react';
 import Link from 'next/link';
-import { fetchPostBySlug } from '@/services/publicService';
 import type { Metadata } from 'next';
+import { PostsService } from '@/src/api/generated';
 
 export const revalidate = 60;
 
-type Props = { params: { locale: string; slug: string } };
+type Props = { params: { slug: string } };
+
+async function getPost(slug: string) {
+  try {
+    const res = await PostsService.getPostsSlug(slug);
+    return res?.data || null;
+  } catch (err) {
+    console.error('❌ Fetch post error:', err);
+    return null;
+  }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await fetchPostBySlug(params.slug).catch(() => null);
-  if (!post) return { title: 'Không tìm thấy – Vitechs' };
+  const post = await getPost(params.slug);
+
+  if (!post) {
+    return { title: 'Không tìm thấy – Vitechs' };
+  }
+
   return {
     title: post.metaTitle || `${post.title} – Vitechs`,
     description: post.metaDescription || post.excerpt || '',
+    openGraph: {
+      title: post.metaTitle || post.title,
+      description: post.metaDescription || post.excerpt || '',
+      images: post.thumbnail ? [post.thumbnail] : [],
+    },
   };
 }
 
 export default async function TinTucDetailPage({ params }: Props) {
   const config = siteConfig;
-  const post = await fetchPostBySlug(params.slug).catch(() => null);
+
+  const post = await getPost(params.slug);
   if (!post) notFound();
+
+  const [relatedPosts, sidebarPosts] = await Promise.all([
+    fetchRelatedPosts(params.slug, 4).catch(() => []),
+    fetchPosts({ limit: 5, page: 1 }).catch(() => ({ data: [] })),
+  ]);
+
+  const sidebar = sidebarPosts?.data || [];
+  const pageUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/tin-tuc/${params.slug}`;
 
   return (
     <>
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        <Link href={`/tin-tuc`}
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-700 mb-6 transition-colors font-medium">
-          <ArrowLeft size={14} /> Quay lại tin tức
-        </Link>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-snug mb-3">{post.title}</h1>
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <CalendarDays size={14} />
-          {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
-          {post.author?.fullName && <span>· {post.author.fullName}</span>}
+      <ReadingProgressBar />
+
+      <main className="bg-white">
+        {/* Breadcrumb */}
+        <div className="max-w-7xl mx-auto px-4 pt-6 pb-2">
+          <nav className="flex items-center gap-2 text-xs text-gray-400">
+            <Link href="/">Trang chủ</Link>
+            <span>/</span>
+            <Link href="/tin-tuc">Tin tức</Link>
+            {post.category && (
+              <>
+                <span>/</span>
+                <span className="text-primary-600 font-medium">
+                  {post.category.name}
+                </span>
+              </>
+            )}
+          </nav>
         </div>
-        {post.thumbnail && (
-          <img src={post.thumbnail} alt={post.title} className="w-full rounded-2xl mb-8 object-cover max-h-96" />
-        )}
-        <article
-          className="prose prose-lg prose-gray max-w-none
-            prose-headings:font-bold prose-headings:text-gray-900
-            prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg
-            prose-p:text-gray-700 prose-p:leading-relaxed
-            prose-a:text-primary-700 prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-gray-900
-            prose-blockquote:border-primary-700 prose-blockquote:bg-primary-50 prose-blockquote:rounded-r-lg prose-blockquote:py-1
-            prose-ul:list-disc prose-ol:list-decimal
-            prose-li:text-gray-700
-            prose-img:rounded-xl prose-img:shadow-md prose-img:mx-auto"
-          dangerouslySetInnerHTML={{ __html: post.content || '' }}
-        />
+
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12">
+
+            {/* ARTICLE */}
+            <article>
+              <Link
+                href="/tin-tuc"
+                className="inline-flex items-center gap-1.5 text-sm text-gray-400 mb-6"
+              >
+                <ArrowLeft size={14} />
+                Quay lại tin tức
+              </Link>
+
+              {/* Category */}
+              {post.category && (
+                <div className="mb-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-primary-50 text-primary-700">
+                    <Tag size={11} />
+                    {post.category.name}
+                  </span>
+                </div>
+              )}
+
+              {/* Title */}
+              <h1 className="text-3xl font-extrabold mb-5">
+                {post.title}
+              </h1>
+
+              {/* Meta */}
+              <div className="flex gap-4 text-sm text-gray-500 mb-8 border-b pb-6">
+                {post.author?.fullName && (
+                  <span className="flex items-center gap-1">
+                    <User size={12} />
+                    {post.author.fullName}
+                  </span>
+                )}
+
+                {post.publishedAt && (
+                  <span className="flex items-center gap-1">
+                    <CalendarDays size={14} />
+                    {new Date(post.publishedAt).toLocaleDateString('vi-VN')}
+                  </span>
+                )}
+
+                {post.readTime && (
+                  <span className="flex items-center gap-1">
+                    <Clock size={14} />
+                    {post.readTime} phút đọc
+                  </span>
+                )}
+              </div>
+
+              {/* Thumbnail */}
+              {post.thumbnail && (
+                <img
+                  src={post.thumbnail}
+                  alt={post.title}
+                  className="rounded-xl mb-6 w-full"
+                />
+              )}
+
+              {/* Excerpt */}
+              {post.excerpt && (
+                <p className="italic mb-6 text-gray-600">
+                  {post.excerpt}
+                </p>
+              )}
+
+              {/* Content */}
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{ __html: post.content || '' }}
+              />
+
+              {/* Tags */}
+              {post.tags?.length > 0 && (
+                <div className="mt-8 flex flex-wrap gap-2">
+                  {post.tags.map((tag: any) => (
+                    <span key={tag.id} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      #{tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Related */}
+              {relatedPosts.length > 0 && (
+                <div className="mt-10">
+                  <h2 className="font-bold mb-4">Bài viết liên quan</h2>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {relatedPosts.map((rp: any) => (
+                      <Link key={rp.id} href={`/tin-tuc/${rp.slug}`}>
+                        <div className="border p-3 rounded">
+                          <p className="font-semibold">{rp.title}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </article>
+
+            {/* SIDEBAR */}
+            <aside className="hidden lg:block">
+              <NewsSidebar posts={sidebar.slice(0, 5)} title="Đọc nhiều nhất" />
+            </aside>
+          </div>
+        </div>
       </main>
+
       <Footer config={config} />
     </>
   );
