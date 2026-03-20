@@ -1,7 +1,13 @@
 import siteConfig from '@/config/siteConfig';
 import Footer from '@/components/layout/Footer';
-import { Target, Eye, Award, Users } from 'lucide-react';
-import AnimatedHeader from '@/components/layout/AnimatedHeader';
+import AboutHero from '@/components/about/AboutHero';
+import AboutStats from '@/components/about/AboutStats';
+import AboutInfoBoxes from '@/components/about/AboutInfoBoxes';
+import AboutFields from '@/components/about/AboutFields';
+import AboutServices from '@/components/about/AboutServices';
+import AboutTeam from '@/components/about/AboutTeam';
+import AboutVision from '@/components/about/AboutVision';
+import AboutOrgChart from '@/components/about/AboutOrgChart';
 
 export const revalidate = 60;
 
@@ -13,67 +19,84 @@ export const metadata = {
 export default async function GioiThieuPage() {
   const config = siteConfig;
 
-  const stats = [
-    { label: 'Năm kinh nghiệm', value: config.stat_years || '10+' },
-    { label: 'Dự án hoàn thành', value: config.stat_projects || '500+' },
-    { label: 'Khách hàng tin dùng', value: config.stat_clients || '200+' },
-    { label: 'Tỉnh thành phủ sóng', value: config.stat_provinces || '20+' },
-  ];
-
   return (
     <>
       <main>
-        <AnimatedHeader title="Giới thiệu" subtitle="Về chúng tôi – Vitechs" />
-        <section className="max-w-7xl mx-auto px-4 py-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-4">
-              {config.site_name || 'Vitechs'} – Giải pháp kỹ thuật hàng đầu
-            </h2>
-            <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed">
+        <AboutHero config={config} />
+
+        {/* Về Chúng Tôi */}
+        <section className="py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <div className="mb-20">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-blue-900 uppercase tracking-wider mb-8">Về Chúng Tôi</h2>
+            </div>
+
+            {/* Stats Highlight (Client Component for Animations) */}
+            <AboutStats />
+
+            {/* Description Text */}
+            <div className="max-w-4xl mx-auto space-y-8 text-[#666] leading-[1.8] mb-16 text-center text-[15px]">
               <p>
-                {config.about_description ||
-                  'Vitechs là đơn vị chuyên cung cấp thiết bị kỹ thuật, dịch vụ sửa chữa và bảo trì máy móc công nghiệp trong lĩnh vực ô tô, điện lạnh và điện công nghiệp. Với đội ngũ kỹ thuật viên giàu kinh nghiệm và hệ thống thiết bị hiện đại, chúng tôi cam kết mang lại giải pháp tối ưu cho khách hàng.'}
+                CTCP ĐẦU TƯ THƯƠNG MẠI VÀ DỊCH VỤ CÔNG NGHỆ VIỆT – VITECHS.,JSC – là nhà cung cấp các thiết bị phục vụ thí nghiệm, đào tạo và dạy nghề có uy tín tại Việt Nam. Công ty chúng tôi là một doanh nghiệp chuyên đi sâu vào việc: Sản xuất các sản phẩm cơ khí, điện, điện tử; sản xuất, lắp ráp các mô hình học cụ phục vụ dạy nghề Điện công nghiệp – Tự động hóa, Cơ khí, Ô tô, Điện lạnh.
+              </p>
+              <p>
+                Ngoài ra chúng tôi còn là nhà nhập khẩu mua bán thương mại các linh kiện phụ kiện, phụ tùng, máy móc, dụng cụ, thiết bị, thiết bị thí nghiệm, thiết bị đo kiểm trong ngành cơ khí, điện, điện tử - tự động hóa, ô tô, máy xây dựng, máy cơ khí, máy phát điện.
               </p>
             </div>
-          </div>
-          {config.about_image ? (
-            <img src={config.about_image} alt="Về Vitechs" className="rounded-2xl w-full object-cover shadow-md" />
-          ) : (
-            <div className="rounded-2xl w-full aspect-[4/3] bg-gradient-to-br from-primary-700 to-primary-900 flex items-center justify-center">
-              <span className="text-white text-6xl font-extrabold opacity-20">V</span>
+
+            {/* Blue Banner Box */}
+            <div 
+              className="max-w-4xl mx-auto text-white p-8 rounded-2xl text-center shadow-xl shadow-blue-500/20 mb-12 font-black text-lg leading-relaxed uppercase"
+              style={{ background: 'linear-gradient(90deg, rgba(69, 133, 230, 1) 0%, rgba(54, 132, 247, 1) 100%)' }}
+            >
+              Qua 15 năm hoạt động, doanh nghiệp chúng tôi đã và đang khẳng định được mình trong lĩnh vực kinh doanh tại Việt Nam.
             </div>
-          )}
-        </section>
 
-        <section className="bg-gray-50 py-12">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <p className="text-3xl font-extrabold text-primary-700">{s.value}</p>
-                <p className="text-sm text-gray-500 mt-1">{s.label}</p>
-              </div>
-            ))}
+            {/* Info Boxes (Client Component for Animations) */}
+            <AboutInfoBoxes />
           </div>
         </section>
 
-        <section className="max-w-7xl mx-auto px-4 py-14">
-          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-10">Sứ mệnh & Giá trị cốt lõi</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Target, color: 'text-primary-700', bg: 'bg-primary-50', title: 'Sứ mệnh', desc: config.mission || 'Cung cấp thiết bị và dịch vụ kỹ thuật chất lượng cao, giúp tối ưu hóa hiệu suất cho khách hàng.' },
-              { icon: Eye, color: 'text-blue-700', bg: 'bg-blue-50', title: 'Tầm nhìn', desc: config.vision || 'Trở thành đối tác kỹ thuật tin cậy hàng đầu trong khu vực, không ngừng đổi mới và phát triển.' },
-              { icon: Award, color: 'text-yellow-600', bg: 'bg-yellow-50', title: 'Chất lượng', desc: 'Cam kết cung cấp sản phẩm và dịch vụ đạt chuẩn chất lượng quốc tế, bảo đảm sự hài lòng của khách hàng.' },
-              { icon: Users, color: 'text-green-700', bg: 'bg-green-50', title: 'Đội ngũ', desc: 'Kỹ thuật viên được đào tạo bài bản, giàu kinh nghiệm thực tiễn, luôn tận tâm với công việc.' },
-            ].map((item) => (
-              <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-                <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center mb-4`}>
-                  <item.icon size={24} className={item.color} />
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+        {/* Lĩnh Vực Hoạt Động (Client Component for Animations) */}
+        <section className="py-24 bg-white border-t border-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-20">
+              <h2 className="text-3xl md:text-5xl font-extrabold text-blue-900 uppercase tracking-wider mb-8">Lĩnh Vực Hoạt Động</h2>
+              <p className="text-[#666] font-medium italic text-[15px]">Chúng tôi cung cấp đa dạng các sản phẩm và dịch vụ chất lượng cao</p>
+            </div>
+
+            <AboutFields />
           </div>
+        </section>
+
+        {/* Dịch vụ chất lượng cao (Client Component for Animations) */}
+        <section className="py-24 bg-white border-t border-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <AboutServices />
+          </div>
+        </section>
+
+        {/* Đội Ngũ Nhân Sự (Client Component for Animations) */}
+        <section className="py-24 bg-white border-t border-gray-50">
+          <AboutTeam />
+        </section>
+
+        {/* Tầm Nhìn & Sứ Mệnh (Client Component for Animations) */}
+        <section className="py-24 bg-white border-t border-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-20">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-[#1e293b] mb-4">Tầm Nhìn & Sứ Mệnh</h2>
+              <div className="w-16 h-1 bg-blue-600 mx-auto mb-8 rounded-full" />
+              <p className="text-[#64748b] font-medium text-[15px]">Định hướng phát triển và cam kết của chúng tôi</p>
+            </div>
+            
+            <AboutVision config={config} />
+          </div>
+        </section>
+
+        {/* Sơ Đồ Tổ Chức (Client Component for Animations) */}
+        <section className="py-24 bg-white border-t border-gray-50">
+          <AboutOrgChart />
         </section>
       </main>
       <Footer config={config} />

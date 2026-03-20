@@ -13,7 +13,9 @@ import {
   Play,
   Info,
   Star,
-  Send
+  Send,
+  X,
+  Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductImage360 from './components/product-image-360';
@@ -30,7 +32,14 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
   const [likesCount, setLikesCount] = useState(product.likesCount || 0);
   const [reviews, setReviews] = useState<any[]>(initialReviews?.data || []);
   const [reviewsCount, setReviewsCount] = useState(initialReviews?.pagination?.total || 0);
-  const [ratingAvg, setRatingAvg] = useState(product.ratingAvg || 0);
+  const [ratingAvg, setRatingAvg] = useState(() => {
+    if (product.ratingAvg > 0) return product.ratingAvg;
+    if (initialReviews?.data?.length > 0) {
+      const sum = initialReviews.data.reduce((acc: number, r: any) => acc + r.rating, 0);
+      return sum / initialReviews.data.length;
+    }
+    return 0;
+  });
   const [activeImg, setActiveImg] = useState(product.thumbnail);
   const [show360, setShow360] = useState(false);
   const thumbsRef = React.useRef<HTMLDivElement>(null);
@@ -92,27 +101,143 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
     rating: 5,
     content: ''
   });
+  const [reviewImages, setReviewImages] = useState<{ url: string; width?: number; height?: number }[]>([]);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [selectedLightboxImage, setSelectedLightboxImage] = useState<string | null>(null);
+
+  const validateField = (name: string, value: string) => {
+    let error = '';
+    if (name === 'userName') {
+      if (!value.trim()) {
+        error = 'Vui lòng nhập họ tên của bạn';
+      } else {
+        const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
+        if (!nameRegex.test(value)) {
+          error = 'Họ tên chỉ được chứa chữ cái và khoảng trắng';
+        }
+      }
+    } else if (name === 'email') {
+      if (!value.trim()) {
+        error = 'Vui lòng nhập email của bạn';
+      } else if (!value.includes('@')) {
+        error = 'Email hợp lệ cần có ký tự @';
+      }
+    } else if (name === 'content') {
+      if (!value.trim()) {
+        error = 'Vui lòng nhập nội dung đánh giá';
+      }
+    }
+    setErrors(prev => ({ ...prev, [name]: error }));
+    return error;
+  };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate all fields
+    const e1 = validateField('userName', reviewForm.userName);
+    const e2 = validateField('email', reviewForm.email);
+    const e3 = validateField('content', reviewForm.content);
+
+    if (e1 || e2 || e3) return;
+
     setSubmittingReview(true);
     try {
-      // Import submitReview dynamically or from publicService if needed
-      // Actually, I'll assume it's imported at the top if I add it.
-      // For now, I'll log and show success to verify UI.
       const { submitReview } = await import('@/services/publicService');
-      await submitReview(product.id, reviewForm);
-      setReviewSuccess(true);
-      setReviewForm({ userName: '', email: '', rating: 5, content: '' });
-      // Optionally re-fetch reviews or add the new one locally
+      const res = await submitReview(product.id, {
+        ...reviewForm,
+        images: reviewImages
+      });
+
+      if (res.success) {
+        setReviewSuccess(true);
+        // Add new review to local state
+        const newReview = res.data;
+        setReviews((prev: any[]) => [newReview, ...prev]);
+        
+        // Recalculate average rating
+        const newCount = reviewsCount + 1;
+        const newAvg = (ratingAvg * reviewsCount + newReview.rating) / newCount;
+        setRatingAvg(newAvg);
+        setReviewsCount(newCount);
+
+        // Reset form
+        setReviewForm({ userName: '', email: '', rating: 5, content: '' });
+        setReviewImages([]);
+      }
     } catch (err) {
       console.error('Error submitting review:', err);
       alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.');
     } finally {
       setSubmittingReview(false);
     }
+  };
+
+  const handleReviewImageUpload = async (file: File) => {
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/v1/upload/public`, {
+        method: 'POST',
+        body: fd
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReviewImages((prev: any[]) => [...prev, { url: data.url, width: data.width, height: data.height }]);
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+    }
+  };
+
+  // Related Products Scroll Logic
+  const relatedRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (relatedRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = relatedRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [relatedProducts]);
+
+  // Thumbnail Scroll Logic
+  const [canScrollLeftThumbs, setCanScrollLeftThumbs] = useState(false);
+  const [canScrollRightThumbs, setCanScrollRightThumbs] = useState(false);
+
+  const checkScrollThumbs = () => {
+    if (thumbsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = thumbsRef.current;
+      setCanScrollLeftThumbs(scrollLeft > 5);
+      setCanScrollRightThumbs(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollThumbs();
+    window.addEventListener('resize', checkScrollThumbs);
+    return () => window.removeEventListener('resize', checkScrollThumbs);
+  }, [product.images, product.thumbnail]);
+
+  // Zoom effect logic
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+  const [showZoom, setShowZoom] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomPos({ x, y });
   };
 
   return (
@@ -138,36 +263,23 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
         <div className="bg-white rounded-2xl shadow-sm flex flex-col md:flex-row gap-8 p-5 md:p-8 overflow-hidden border border-gray-100">
 
           <div className="w-full md:w-[480px] shrink-0">
-            <div className="relative aspect-square border border-gray-100 rounded-xl overflow-hidden bg-white mb-4 group shadow-inner">
+            <div 
+              className="relative aspect-square border border-gray-100 rounded-xl overflow-hidden bg-white mb-4 group shadow-inner cursor-zoom-in"
+              onClick={() => setSelectedLightboxImage(activeImg)}
+            >
               {show360 && product.images && product.images.length > 3 ? (
                 <ProductImage360 images360={product.images} />
               ) : (
-                <ProductImage360 
-      images360={[
-        "/slider/360-product-photography-575px01.jpg",
-        "/slider/360-product-photography-575px02.jpg",
-        "/slider/360-product-photography-575px03.jpg",
-        "/slider/360-product-photography-575px04.jpg",
-        "/slider/360-product-photography-575px06.jpg",
-        "/slider/360-product-photography-575px08.jpg",
-        "/slider/360-product-photography-575px09.jpg",
-        "/slider/360-product-photography-575px11.jpg",
-        "/slider/360-product-photography-575px12.jpg",
-        "/slider/360-product-photography-575px14.jpg",
-        "/slider/360-product-photography-575px16.jpg",
-        "/slider/360-product-photography-575px18.jpg",
-        "/slider/360-product-photography-575px20.jpg",
-        "/slider/360-product-photography-575px22.jpg",
-        "/slider/360-product-photography-575px23.jpg",
-        "/slider/360-product-photography-575px25.jpg",
-        "/slider/360-product-photography-575px27.jpg",
-      ]} 
-      />
+                <img
+                  src={activeImg}
+                  className="w-full h-full object-contain p-4"
+                  alt={product.name}
+                />
               )}
 
-              {product.images && product.images.length > 3 && (
+              {product.images && product.images.length > 5 && (
                 <button
-                  onClick={() => setShow360(!show360)}
+                  onClick={(e) => { e.stopPropagation(); setShow360(!show360); }}
                   className="absolute bottom-4 right-4 bg-white/90 text-[#2b59ff] p-3 rounded-full shadow-lg backdrop-blur-sm hover:bg-[#2b59ff] hover:text-white transition-all transform hover:scale-110 active:scale-95 z-10"
                 >
                   <Play size={20} fill="currentColor" />
@@ -178,6 +290,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
             <div className="relative group/thumbs">
               <div
                 ref={thumbsRef}
+                onScroll={checkScrollThumbs}
                 className="flex gap-3 overflow-x-auto pb-4 scrollbar-none scroll-smooth"
               >
                 {[product.thumbnail, ...(product.images || [])].filter(Boolean).map((img, i) => (
@@ -196,24 +309,32 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               </div>
 
               {/* Thumbnail Nav Buttons */}
-              <button
-                onClick={() => scrollThumbs('left')}
-                className="absolute left-0 top-1/2 -translate-y-[calc(50%+8px)] w-8 h-16 bg-black/20 text-white flex items-center justify-center opacity-0 group-hover/thumbs:opacity-100 transition-opacity z-10 rounded-r-sm"
-              >
-                <ChevronRight className="rotate-180" size={20} />
-              </button>
-              <button
-                onClick={() => scrollThumbs('right')}
-                className="absolute right-0 top-1/2 -translate-y-[calc(50%+8px)] w-8 h-16 bg-black/20 text-white flex items-center justify-center opacity-0 group-hover/thumbs:opacity-100 transition-opacity z-10 rounded-l-sm"
-              >
-                <ChevronRight size={20} />
-              </button>
+              {canScrollLeftThumbs && (
+                <button
+                  onClick={() => scrollThumbs('left')}
+                  className="absolute left-[-20px] top-1/2 -translate-y-[calc(50%+8px)] w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-600 shadow-lg hover:bg-gray-50 transition-all z-10"
+                >
+                  <ChevronRight className="rotate-180" size={20} />
+                </button>
+              )}
+              {canScrollRightThumbs && (
+                <button
+                  onClick={() => scrollThumbs('right')}
+                  className="absolute right-[-20px] top-1/2 -translate-y-[calc(50%+8px)] w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-600 shadow-lg hover:bg-gray-50 transition-all z-10"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              )}
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-10 border-t border-gray-50 pt-6">
               <div className="flex items-center gap-3">
-                <Star size={20} className="text-amber-400 fill-amber-400" />
-                <span className="text-sm font-bold text-[#1a1c1e]">Đánh giá ({reviewsCount})</span>
+                <div className="flex items-center">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} size={16} className={`${star <= Math.round(ratingAvg) ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} />
+                  ))}
+                </div>
+                <span className="text-sm font-bold text-[#1a1c1e]">{ratingAvg.toFixed(1)}/5 ({reviewsCount})</span>
               </div>
               <div className="h-6 w-px bg-gray-200"></div>
               <button
@@ -320,30 +441,57 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <div className="bg-white p-4 rounded-xl border-l-4 border-[#2b59ff] mb-8 flex items-center justify-between shadow-sm border border-gray-100/50">
-              <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">Sản Phẩm Liên Quan</h2>
-              <div className="h-px flex-1 bg-gray-200 mx-6 opacity-30 hidden md:block" />
+          <div className="mt-16 bg-white rounded-2xl shadow-sm p-6 md:p-10 border border-gray-100 relative group/related">
+            <div className="bg-gray-50 p-5 rounded-xl border-l-4 border-[#2b59ff] mb-10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">SẢN PHẨM LIÊN QUAN</h2>
+              <div className="h-px flex-1 bg-gray-200 mx-6 opacity-50 hidden md:block" />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {relatedProducts.map(p => (
-                <a
-                  key={p.id}
-                  href={`/san-pham/${p.slug}`}
-                  className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 overflow-hidden group flex flex-col h-full active:scale-[0.98]"
-                >
-                  <div className="aspect-square bg-white overflow-hidden p-2">
-                    <img src={p.thumbnail} alt={p.name} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" />
-                  </div>
-                  <div className="p-5 flex-1 flex flex-col">
-                    <h3 className="text-[15px] font-bold text-gray-800 line-clamp-2 leading-tight group-hover:text-[#2b59ff] transition-colors mb-2">{p.name}</h3>
-                    <div className="mt-auto">
-                      <span className="text-[#2b59ff] text-lg font-black tracking-tight">{formatPrice(p.price)}</span>
+            <div className="relative">
+              <div
+                ref={relatedRef}
+                onScroll={checkScroll}
+                className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+              >
+                {relatedProducts.map(p => (
+                  <a
+                    key={p.id}
+                    href={`/san-pham/${p.slug}`}
+                    className="min-w-[220px] w-[220px] bg-white rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 overflow-hidden group flex flex-col h-full active:scale-[0.98]"
+                  >
+                    <div className="aspect-square bg-white overflow-hidden p-2">
+                      <img src={p.thumbnail} alt={p.name} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" />
                     </div>
-                  </div>
-                </a>
-              ))}
+                    <div className="p-5 flex-1 flex flex-col">
+                      <h3 className="text-[15px] font-bold text-gray-800 line-clamp-2 leading-tight group-hover:text-[#2b59ff] transition-colors mb-2">{p.name}</h3>
+                      <div className="mt-auto">
+                        <span className="text-[#2b59ff] text-lg font-black tracking-tight">{formatPrice(p.price)}</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              {canScrollLeft && (
+                <button
+                  onClick={() => {
+                    if (relatedRef.current) relatedRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+                  }}
+                  className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-600 shadow-lg hover:bg-gray-50 transition-all z-10"
+                >
+                  <ChevronRight size={20} className="rotate-180" />
+                </button>
+              )}
+              {canScrollRight && (
+                <button
+                  onClick={() => {
+                    if (relatedRef.current) relatedRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+                  }}
+                  className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-600 shadow-lg hover:bg-gray-50 transition-all z-10"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -353,13 +501,13 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
           <div className="bg-gray-50/50 p-5 rounded-xl border-l-4 border-[#2b59ff] mb-10 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">ĐÁNH GIÁ SẢN PHẨM</h2>
             <div className="flex items-center gap-2">
-               <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} size={16} className={`${star <= Math.round(ratingAvg) ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
-                  ))}
-               </div>
-               <span className="text-sm font-bold text-gray-900">{ratingAvg.toFixed(1)}/5</span>
-               <span className="text-sm text-gray-500">({reviewsCount} đánh giá)</span>
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} size={16} className={`${star <= Math.round(ratingAvg) ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
+                ))}
+              </div>
+              <span className="text-sm font-bold text-gray-900">{ratingAvg.toFixed(1)}/5</span>
+              <span className="text-sm text-gray-500">({reviewsCount} đánh giá)</span>
             </div>
           </div>
 
@@ -383,11 +531,21 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                           </div>
                         </div>
                       </div>
-                      <span className="text-xs text-gray-400 font-medium">
-                        {new Date(r.createdAt || Date.now()).toLocaleDateString('vi-VN')}
-                      </span>
                     </div>
-                    <p className="text-gray-600 leading-relaxed pl-[52px]">{r.content}</p>
+                    <p className="text-gray-600 leading-relaxed pl-[52px] mb-4">{r.content}</p>
+                    {r.ProductReviewImages && r.ProductReviewImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pl-[52px]">
+                        {r.ProductReviewImages.map((img: any, idx: number) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => setSelectedLightboxImage(img.url)}
+                            className="w-20 h-20 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-zoom-in hover:scale-105 transition-transform"
+                          >
+                            <img src={img.url} className="w-full h-full object-cover" alt="" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -401,13 +559,13 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
             {/* Review Form */}
             <div className="bg-gray-50 rounded-2xl p-6 md:p-8 h-fit shadow-inner ring-1 ring-black/5">
               <h3 className="text-lg font-bold text-gray-900 mb-6">Gửi đánh giá của bạn</h3>
-              
+
               {reviewSuccess ? (
                 <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl text-center border border-emerald-100">
                   <Check className="mx-auto mb-2" size={24} />
                   <p className="font-bold">Cảm ơn bạn đã đánh giá!</p>
                   <p className="text-sm opacity-80">Phản hồi của bạn đã được ghi nhận.</p>
-                  <button 
+                  <button
                     onClick={() => setReviewSuccess(false)}
                     className="mt-4 text-xs font-bold underline"
                   >
@@ -418,7 +576,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                 <form onSubmit={handleSubmitReview} className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Điểm đánh giá</label>
-                    <div className="flex items-center gap-1.5 bg-white p-3 rounded-xl border border-gray-200">
+                    <div className="flex items-center gap-1.5 mb-2 ml-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
@@ -434,39 +592,88 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Họ tên</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         value={reviewForm.userName}
-                        onChange={(e) => setReviewForm(prev => ({ ...prev, userName: e.target.value }))}
-                        className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b59ff]/20 placeholder:text-gray-300 transition-all font-medium"
-                        placeholder="Nhập họ tên " 
+                        onChange={(e) => {
+                          setReviewForm(prev => ({ ...prev, userName: e.target.value }));
+                          if (errors.userName) validateField('userName', e.target.value);
+                        }}
+                        onBlur={(e) => validateField('userName', e.target.value)}
+                        className={`w-full bg-white border ${errors.userName ? 'border-red-500' : 'border-gray-200'} rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b59ff]/20 placeholder:text-gray-300 transition-all font-medium`}
+                        placeholder="Nhập họ tên "
                       />
+                      {errors.userName && <p className="mt-1 text-[10px] font-bold text-red-500 uppercase tracking-tight ml-1">{errors.userName}</p>}
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Email</label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         required
                         value={reviewForm.email}
-                        onChange={(e) => setReviewForm(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b59ff]/20 placeholder:text-gray-300 transition-all font-medium"
-                        placeholder="email@gmail.com" 
+                        onChange={(e) => {
+                          setReviewForm(prev => ({ ...prev, email: e.target.value }));
+                          if (errors.email) validateField('email', e.target.value);
+                        }}
+                        onBlur={(e) => validateField('email', e.target.value)}
+                        className={`w-full bg-white border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b59ff]/20 placeholder:text-gray-300 transition-all font-medium`}
+                        placeholder="email@gmail.com"
                       />
+                      {errors.email && <p className="mt-1 text-[10px] font-bold text-red-500 uppercase tracking-tight ml-1">{errors.email}</p>}
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Nội dung</label>
-                    <textarea 
-                      rows={4} 
+                    <textarea
+                      rows={4}
                       required
                       value={reviewForm.content}
-                      onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
-                      className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b59ff]/20 placeholder:text-gray-300 transition-all font-medium resize-none"
+                      onChange={(e) => {
+                        setReviewForm(prev => ({ ...prev, content: e.target.value }));
+                        if (errors.content) validateField('content', e.target.value);
+                      }}
+                      onBlur={(e) => validateField('content', e.target.value)}
+                      className={`w-full bg-white border ${errors.content ? 'border-red-500' : 'border-gray-200'} rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2b59ff]/20 placeholder:text-gray-300 transition-all font-medium resize-none shadow-sm`}
                       placeholder="Đánh giá của bạn về sản phẩm này..."
                     ></textarea>
+                    {errors.content && <p className="mt-1 text-[10px] font-bold text-red-500 uppercase tracking-tight ml-1">{errors.content}</p>}
                   </div>
-                  <button 
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Hình ảnh thực tế (tùy chọn)</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {reviewImages.map((img, i) => (
+                        <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
+                          <img src={img.url} className="w-full h-full object-cover" alt="" />
+                          <button
+                            type="button"
+                            onClick={() => setReviewImages(prev => prev.filter((_, idx) => idx !== i))}
+                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                          >
+                            <X size={14} className="text-white" />
+                          </button>
+                        </div>
+                      ))}
+                      {reviewImages.length < 5 && (
+                        <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#2b59ff] hover:bg-white transition-all">
+                          <Plus size={20} className="text-gray-400" />
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              files.forEach(handleReviewImageUpload);
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-gray-400 italic">Chọn tối đa 5 ảnh thực tế của sản phẩm.</p>
+                  </div>
+                  <button
                     type="submit"
                     disabled={submittingReview}
                     className="w-full bg-[#2b59ff] hover:bg-[#1a47ff] text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 group active:scale-95 disabled:opacity-50"
@@ -501,7 +708,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                 onClick={() => setShowShareModal(false)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <Play size={24} className="rotate-45" />
+                <X size={24} />
               </button>
 
               <h3 className="text-xl font-black text-gray-900 mb-6 text-center">CHIA SẺ SẢN PHẨM</h3>
@@ -547,6 +754,38 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               )}
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+      {/* Lightbox for images */}
+      <AnimatePresence>
+        {selectedLightboxImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedLightboxImage(null)}
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+          >
+            <motion.button
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full backdrop-blur-md"
+              onClick={() => setSelectedLightboxImage(null)}
+            >
+              <X size={28} />
+            </motion.button>
+            
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              src={selectedLightboxImage}
+              alt="Enlarged view"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

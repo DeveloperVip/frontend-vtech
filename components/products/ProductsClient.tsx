@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Phone, Search, SlidersHorizontal, ArrowRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductsService } from '@/src/api/generated';
-import ProductImage360 from './components/product-image-360';
 
 interface Product {
   id: number;
@@ -44,7 +43,14 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
   const [categoryId, setCategoryId] = useState('');
   const [loading, setLoading] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const lastRequest = useRef<any>(null);
+
+  // Initial skip for the first mount to avoid double loading (Next.js 13+ with initialProps)
+  const isFirstMount = useRef(true);
+  const searchTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -58,27 +64,72 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
     };
   }, []);
 
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+
+    searchTimer.current = setTimeout(() => {
+      load({ search, categoryId, limit: 12, page: 1 });
+    }, 500); // Increased to 500ms to avoid 429 Too Many Requests
+
+    return () => {
+      if (searchTimer.current) clearTimeout(searchTimer.current);
+    };
+  }, [search]);
+
+
+  useEffect(() => {
+    if (isFirstMount.current) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    load({ search, categoryId, limit: 12, page: 1 });
+  }, [categoryId]);
+
   const load = async (params: Record<string, string | number>) => {
-    setLoading(true);
+    // Cancel previous request if still running
+    if (lastRequest.current && typeof lastRequest.current.cancel === 'function') {
+      lastRequest.current.cancel();
+    }
+
+    if (products.length === 0) setLoading(true);
+    else setIsSearching(true);
+    setError(null);
+
+    const promise = ProductsService.getProducts(
+      params.page as number,
+      params.limit as number,
+      params.search as string,
+      params.categoryId ? Number(params.categoryId) : undefined
+    );
+    lastRequest.current = promise;
+
     try {
-      const res = await ProductsService.getProducts();
-      console.log("🚀 ~ load ~ res:", res)
+      const res = await promise;
       setProducts(res.data || []);
-      setPagination(res.pagination || pagination);
+      setPagination(res.pagination || { ...pagination, page: params.page as number });
+    } catch (err: any) {
+      // Ignore cancellation errors
+      if (err.name === 'CancelError' || err.message?.includes('aborted')) return;
+      
+      console.error("Error loading products:", err);
+      // Handle the 429 specifically
+      if (err.status === 429 || err.message?.includes('429')) {
+        setError("Bạn đang tìm kiếm quá nhanh. Vui lòng thử lại sau giây lát.");
+      } else {
+        setError("Có lỗi xảy ra khi tải sản phẩm. Vui lòng thử lại.");
+      }
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    load({ search, categoryId, limit: 12, page: 1 });
   };
 
   const handleCategory = (id: string) => {
     setCategoryId(id);
     setIsFilterOpen(false);
-    load({ search, categoryId: id, limit: 12, page: 1 });
   };
 
   const handlePage = (page: number) => {
@@ -106,7 +157,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
       >
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="w-full sm:flex-1">
+        <form onSubmit={(e) => e.preventDefault()} className="w-full sm:flex-1">
           <div className="relative w-full group">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
             <input
@@ -152,6 +203,13 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
         </div>
       </motion.div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm text-center animate-shake">
+          {error}
+        </div>
+      )}
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -163,134 +221,147 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
         </p>
       </motion.div>
 
-      {/* Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-gray-100 animate-pulse rounded-2xl w-full h-[450px]" />
-          ))}
-        </div>
-      ) : products.length === 0 ? (
-        <div className="text-center py-24 text-gray-400">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-50 mb-4">
-            <Search size={32} className="text-gray-300" />
+      {/* Grid wrapper to prevent flicker */}
+      <div className={`transition-opacity duration-300 ${isSearching ? 'opacity-60 cursor-wait' : 'opacity-100'}`}>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-gray-100 animate-pulse rounded-2xl w-full h-[450px]" />
+            ))}
           </div>
-          <p className="text-gray-500">Không tìm thấy sản phẩm nào phù hợp</p>
-        </div>
-      ) : (
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1 }
-            }
-          }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-        >
-          {products.map((p) => (
-            <motion.div
-              key={p.id}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
-              }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <Link href={`/san-pham/${p.slug}`} className="group block h-full">
-                <div className="bg-white rounded-2xl border border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full flex flex-col">
+        ) : products.length === 0 ? (
+          <div className="text-center py-24 text-gray-400">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-50 mb-4">
+              <Search size={32} className="text-gray-300" />
+            </div>
+            <p className="text-gray-500">Không tìm thấy sản phẩm nào phù hợp</p>
+          </div>
+        ) : (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.1 }
+              }
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 xl:gap-8"
+          >
+            {products.map((p) => (
+              <motion.div
+                key={p.id}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                <Link href={`/san-pham/${p.slug}`} className="group block h-full">
+                  <div className="bg-white rounded-2xl border border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full flex flex-col">
 
-                  {/* Ảnh Sản Phẩm & Badges */}
-                  <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                    {p.thumbnail ? (
-                      <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">Chưa có ảnh</div>
-                    )}
+                    {/* Ảnh Sản Phẩm & Badges */}
+                    <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                      {p.thumbnail ? (
+                        <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">Chưa có ảnh</div>
+                      )}
 
-                    <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
-                      {p.category ? (
-                        <span className="bg-white/70 backdrop-blur-md text-gray-800 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-white/20">
-                          {p.category.name}
-                        </span>
-                      ) : <span />}
-                      <span className="bg-emerald-100/80 backdrop-blur-md text-emerald-600 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-emerald-200/50">
-                        Còn Hàng
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Nội dung Card */}
-                  <div className="p-6 flex flex-col flex-1 relative">
-                    <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 line-clamp-2">
-                      {p.name}
-                    </h3>
-
-                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-6 flex-1">
-                      {p.shortDescription || `Khám phá ngay sản phẩm ${p.name.toLowerCase()} với chất lượng tuyệt vời, độ bền cao và thiết kế sang trọng nhất.`}
-                    </p>
-
-                    <div className="flex items-end justify-between mt-auto">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] text-gray-400 uppercase font-bold tracking-wider mb-1">Giá bán</span>
-                        <span className={`font-extrabold text-blue-600 text-lg`}>
-                          {formatPrice(p.price, p.priceType)}
+                      <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
+                        {p.category ? (
+                          <span className="bg-white/70 backdrop-blur-md text-gray-800 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-white/20">
+                            {p.category.name}
+                          </span>
+                        ) : <span />}
+                        <span className="bg-emerald-100/80 backdrop-blur-md text-emerald-600 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm border border-emerald-200/50">
+                          Còn Hàng
                         </span>
                       </div>
+                    </div>
 
-                      <div className="group/btn w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-300 hover:scale-110">
-                        <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                    {/* Nội dung Card */}
+                    <div className="p-6 flex flex-col flex-1 relative">
+                      <h3 className="font-bold text-gray-900 text-lg leading-tight mb-2 line-clamp-2">
+                        {p.name}
+                      </h3>
+
+                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-4 flex-1">
+                        {p.shortDescription || `Khám phá ngay sản phẩm ${p.name.toLowerCase()} với chất lượng tuyệt vời, độ bền cao và thiết kế sang trọng nhất.`}
+                      </p>
+
+
+                      <div className="flex items-end justify-between mt-auto">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] text-gray-400 uppercase font-bold tracking-wider mb-1">Giá bán</span>
+                          <span className={`font-extrabold text-blue-600 text-lg`}>
+                            {formatPrice(p.price, p.priceType)}
+                          </span>
+                        </div>
+
+                        <div className="group/btn w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-300 hover:scale-110">
+                          <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-      <ProductImage360 
-      images360={[
-        "/slider/360-product-photography-575px01.jpg",
-        "/slider/360-product-photography-575px02.jpg",
-        "/slider/360-product-photography-575px03.jpg",
-        "/slider/360-product-photography-575px04.jpg",
-        "/slider/360-product-photography-575px06.jpg",
-        "/slider/360-product-photography-575px08.jpg",
-        "/slider/360-product-photography-575px09.jpg",
-        "/slider/360-product-photography-575px11.jpg",
-        "/slider/360-product-photography-575px12.jpg",
-        "/slider/360-product-photography-575px14.jpg",
-        "/slider/360-product-photography-575px16.jpg",
-        "/slider/360-product-photography-575px18.jpg",
-        "/slider/360-product-photography-575px20.jpg",
-        "/slider/360-product-photography-575px22.jpg",
-        "/slider/360-product-photography-575px23.jpg",
-        "/slider/360-product-photography-575px25.jpg",
-        "/slider/360-product-photography-575px27.jpg",
-      ]} 
-      />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-16 pb-10">
-          {Array.from({ length: Math.min(pagination.totalPages, 5) }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handlePage(i + 1)}
-              className={`w-10 h-10 rounded-full text-sm font-semibold transition-all ${pagination.page === i + 1
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600'
-                }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-          {pagination.totalPages > 5 && (
-            <div className="flex items-center text-gray-400 px-2">...</div>
-          )}
+        <div className="flex justify-center items-center gap-2 mt-16 pb-10">
+          <button
+            onClick={() => handlePage(pagination.page - 1)}
+            disabled={pagination.page === 1}
+            className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-blue-400 hover:text-blue-600 transition-all"
+          >
+            <ChevronDown size={18} className="rotate-90" />
+          </button>
+
+          {Array.from({ length: pagination.totalPages }).map((_, i) => {
+            const pageNum = i + 1;
+            // Show first page, last page, and a range around current page
+            if (
+              pageNum === 1 ||
+              pageNum === pagination.totalPages ||
+              (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+            ) {
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePage(pageNum)}
+                  className={`w-10 h-10 rounded-full text-sm font-semibold transition-all ${pagination.page === pageNum
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                    }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            }
+            // Show ellipsis
+            if (pageNum === 2 && pagination.page > 3) {
+              return <span key="dots-1" className="text-gray-400 px-1">...</span>;
+            }
+            if (pageNum === pagination.totalPages - 1 && pagination.page < pagination.totalPages - 2) {
+              return <span key="dots-2" className="text-gray-400 px-1">...</span>;
+            }
+            return null;
+          })}
+
+          <button
+            onClick={() => handlePage(pagination.page + 1)}
+            disabled={pagination.page === pagination.totalPages}
+            className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-blue-400 hover:text-blue-600 transition-all"
+          >
+            <ChevronDown size={18} className="-rotate-90" />
+          </button>
         </div>
       )}
     </div>

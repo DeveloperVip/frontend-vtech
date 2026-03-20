@@ -26,8 +26,8 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
             <div className="w-16 h-1 bg-primary-700 mt-2 rounded" />
           </div>
           <Link href="/san-pham"
-            className="text-primary-700 text-sm font-semibold hover:underline hidden md:block">
-            Xem tất cả →
+            className="px-6 py-2 border border-blue-900/10 text-blue-900 text-[11px] font-bold uppercase tracking-widest rounded-full hover:bg-blue-900 hover:text-white transition-all duration-300 hidden md:flex items-center gap-2">
+            Xem tất cả <span className="text-lg leading-none mb-0.5">→</span>
           </Link>
         </div>
 

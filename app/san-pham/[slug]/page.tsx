@@ -1,7 +1,7 @@
 import siteConfig from '@/config/siteConfig';
 import Footer from '@/components/layout/Footer';
 import { notFound } from 'next/navigation';
-import { fetchProductBySlug, fetchProducts, fetchReviews } from '@/services/publicService';
+import { fetchProductBySlug, fetchProducts, fetchReviews, fetchRelatedProducts } from '@/services/publicService';
 import ProductDetailClient from '@/components/products/ProductDetailClient';
 
 export const revalidate = 60;
@@ -22,14 +22,21 @@ export default async function SanPhamDetailPage({ params }: Props) {
   let initialReviews = { data: [], pagination: { total: 0 } };
 
   try {
-    const catId = product.categoryId || product.category?.id || product.category_id;
-    if (catId) {
-      const res = await fetchProducts({ categoryId: catId, limit: 13 });
-      relatedProducts = (res.data || [])
-        .filter((p: any) => String(p.id) !== String(product.id))
-        .slice(0, 12);
+    // 1. Try to fetch specifically related products from API
+    relatedProducts = await fetchRelatedProducts(product.id).catch(() => []);
+    
+    // 2. Fallback to products from the same category if no specific relations
+    if (relatedProducts.length === 0) {
+      const catId = product.categoryId || product.category?.id || product.category_id;
+      if (catId) {
+        const res = await fetchProducts({ categoryId: catId, limit: 13 });
+        relatedProducts = (res.data || [])
+          .filter((p: any) => String(p.id) !== String(product.id))
+          .slice(0, 12);
+      }
     }
     
+    // 3. Last fallback: random products if still empty
     if (relatedProducts.length === 0) {
       const res = await fetchProducts({ limit: 13 });
       relatedProducts = (res.data || [])
