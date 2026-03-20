@@ -1,28 +1,38 @@
-import { fetchPosts } from '@/services/publicService';
+import { fetchPosts, fetchFeaturedPost } from '@/services/publicService';
 import siteConfig from '@/config/siteConfig';
 import Footer from '@/components/layout/Footer';
-import NewsList from '@/components/news/NewsList';
-import AnimatedHeader from '@/components/layout/AnimatedHeader';
+import NewsHero from '@/components/news/NewsHero';
+import NewsGrid from '@/components/news/NewsGrid';
+import { PostsService } from '@/src/api/generated';
 
 export const revalidate = 60;
 
 export const metadata = {
   title: 'Tin tức – Vitechs',
-  description: 'Tin tức và bài viết mới nhất từ Vitechs.',
+  description: 'Tin tức, sự kiện và bài viết mới nhất từ Vitechs.',
 };
 
 export default async function TinTucPage() {
   const config = siteConfig;
-  const postsData = await fetchPosts({ limit: 9, page: 1 }).catch(() => ({ data: [], pagination: {} }));
+
+  const [postsData, featuredPost, sidebarData] = await Promise.all([
+    PostsService.getPosts().catch(() => ({ data: [] })),
+    PostsService.getPosts().catch(() => null),
+    PostsService.getPosts().catch(() => ({ data: [] })),
+  ]);
+  console.log("🚀 ~ TinTucPage ~ postsData:", featuredPost?.data?.[0])
+
   const posts = postsData.data || [];
+  const sidebarPosts = (sidebarData.data || []).slice(0, 5);
 
   return (
     <>
       <main>
-        <AnimatedHeader title="Tin tức" subtitle="Cập nhật kiến thức và thông tin mới nhất từ Vitechs" />
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <NewsList posts={posts} />
-        </div>
+        {/* Hero Banner */}
+        <NewsHero post={featuredPost?.data?.[0]} />
+
+        {/* Grid + Sidebar (includes sticky category filter) */}
+        <NewsGrid initialPosts={posts} sidebarPosts={sidebarPosts} />
       </main>
       <Footer config={config} />
     </>

@@ -33,6 +33,21 @@ export const fetchPostBySlug = async (slug: string) => {
   return res.data.data;
 };
 
+export const fetchFeaturedPost = async () => {
+  const res = await apiClient.get('/posts', { params: { published: 'true', featured: 'true', limit: 1 } });
+  const list = res.data?.data || [];
+  if (list.length > 0) return list[0];
+  // fallback: bài mới nhất
+  const fallback = await apiClient.get('/posts', { params: { published: 'true', limit: 1 } });
+  return fallback.data?.data?.[0] || null;
+};
+
+export const fetchRelatedPosts = async (currentSlug: string, limit = 4) => {
+  const res = await apiClient.get('/posts', { params: { published: 'true', limit: limit + 1 } });
+  const list: any[] = res.data?.data || [];
+  return list.filter((p: any) => p.slug !== currentSlug).slice(0, limit);
+};
+
 export const fetchReviews = async (productId: number, params?: Record<string, string | number>) => {
   const res = await apiClient.get(`/products/${productId}/reviews`, { params });
   return res.data;
