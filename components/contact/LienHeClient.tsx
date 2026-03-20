@@ -140,7 +140,10 @@ export default function LienHeClient() {
     <div className="w-full bg-gray-50 min-h-screen">
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-violet-600 text-white pt-20 pb-16">
+      <div 
+        className="text-white pt-20 pb-16"
+        style={{ background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)' }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

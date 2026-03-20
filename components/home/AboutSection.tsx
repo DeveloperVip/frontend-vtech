@@ -53,7 +53,7 @@ export default function AboutSection({ config }: { config?: Record<string, strin
           transition={{ duration: 0.7 }}
           className="text-center mb-20"
         >
-          <h2 className="text-3xl md:text-5xl font-extrabold text-[#333] uppercase tracking-wider mb-8">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-blue-900 uppercase tracking-wider mb-8">
             GIỚI THIỆU VỀ VITECHS
           </h2>
 

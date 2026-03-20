@@ -20,7 +20,7 @@ export default function PartnersSection() {
 
         {/* Giới thiệu */}
         <div className="text-center mb-16">
-          <h2 className="text-[28px] font-bold text-[#555] uppercase tracking-wider mb-3">Đối tác</h2>
+          <h2 className="text-[28px] font-bold text-blue-900 uppercase tracking-wider mb-3">Đối tác</h2>
           <p className="text-center text-gray-500 text-[15px]">Một số đối tác tiêu biểu của chúng tôi</p>
         </div>
       </div>

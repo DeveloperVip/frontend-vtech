@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import UserChatbox from '@/components/chat/UserChatbox';
-import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
+import Navbar from '@/components/layout/Navbar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,12 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <NextTopLoader
-          color="#2563EB"
-          height={3}
-          showSpinner={false}
-          shadow="0 0 10px #2563EB,0 0 5px #2563EB"
-        />
+        <Navbar />
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         {children}
         <UserChatbox />

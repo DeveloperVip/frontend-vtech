@@ -1,7 +1,7 @@
 import siteConfig from '@/config/siteConfig';
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Target, Eye, Award, Users } from 'lucide-react';
+import AnimatedHeader from '@/components/layout/AnimatedHeader';
 
 export const revalidate = 60;
 
@@ -22,17 +22,8 @@ export default async function GioiThieuPage() {
 
   return (
     <>
-      <Navbar config={config} />
       <main>
-        {/* Hero */}
-        <div className="bg-primary-700 text-white py-10">
-          <div className="max-w-7xl mx-auto px-4">
-            <h1 className="text-3xl font-bold">Giới thiệu</h1>
-            <p className="mt-1 text-primary-200 text-sm">Về chúng tôi – Vitechs</p>
-          </div>
-        </div>
-
-        {/* Giới thiệu công ty */}
+        <AnimatedHeader title="Giới thiệu" subtitle="Về chúng tôi – Vitechs" />
         <section className="max-w-7xl mx-auto px-4 py-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900 mb-4">
@@ -46,8 +37,7 @@ export default async function GioiThieuPage() {
             </div>
           </div>
           {config.about_image ? (
-            <img src={config.about_image} alt="Về Vitechs"
-              className="rounded-2xl w-full object-cover shadow-md" />
+            <img src={config.about_image} alt="Về Vitechs" className="rounded-2xl w-full object-cover shadow-md" />
           ) : (
             <div className="rounded-2xl w-full aspect-[4/3] bg-gradient-to-br from-primary-700 to-primary-900 flex items-center justify-center">
               <span className="text-white text-6xl font-extrabold opacity-20">V</span>
@@ -55,7 +45,6 @@ export default async function GioiThieuPage() {
           )}
         </section>
 
-        {/* Thống kê */}
         <section className="bg-gray-50 py-12">
           <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((s) => (
@@ -67,33 +56,14 @@ export default async function GioiThieuPage() {
           </div>
         </section>
 
-        {/* Sứ mệnh / Tầm nhìn */}
         <section className="max-w-7xl mx-auto px-4 py-14">
-          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-10">
-            Sứ mệnh &amp; Giá trị cốt lõi
-          </h2>
+          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-10">Sứ mệnh & Giá trị cốt lõi</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              {
-                icon: Target, color: 'text-primary-700', bg: 'bg-primary-50',
-                title: 'Sứ mệnh',
-                desc: config.mission || 'Cung cấp thiết bị và dịch vụ kỹ thuật chất lượng cao, giúp tối ưu hóa hiệu suất cho khách hàng.',
-              },
-              {
-                icon: Eye, color: 'text-blue-700', bg: 'bg-blue-50',
-                title: 'Tầm nhìn',
-                desc: config.vision || 'Trở thành đối tác kỹ thuật tin cậy hàng đầu trong khu vực, không ngừng đổi mới và phát triển.',
-              },
-              {
-                icon: Award, color: 'text-yellow-600', bg: 'bg-yellow-50',
-                title: 'Chất lượng',
-                desc: 'Cam kết cung cấp sản phẩm và dịch vụ đạt chuẩn chất lượng quốc tế, bảo đảm sự hài lòng của khách hàng.',
-              },
-              {
-                icon: Users, color: 'text-green-700', bg: 'bg-green-50',
-                title: 'Đội ngũ',
-                desc: 'Kỹ thuật viên được đào tạo bài bản, giàu kinh nghiệm thực tiễn, luôn tận tâm với công việc.',
-              },
+              { icon: Target, color: 'text-primary-700', bg: 'bg-primary-50', title: 'Sứ mệnh', desc: config.mission || 'Cung cấp thiết bị và dịch vụ kỹ thuật chất lượng cao, giúp tối ưu hóa hiệu suất cho khách hàng.' },
+              { icon: Eye, color: 'text-blue-700', bg: 'bg-blue-50', title: 'Tầm nhìn', desc: config.vision || 'Trở thành đối tác kỹ thuật tin cậy hàng đầu trong khu vực, không ngừng đổi mới và phát triển.' },
+              { icon: Award, color: 'text-yellow-600', bg: 'bg-yellow-50', title: 'Chất lượng', desc: 'Cam kết cung cấp sản phẩm và dịch vụ đạt chuẩn chất lượng quốc tế, bảo đảm sự hài lòng của khách hàng.' },
+              { icon: Users, color: 'text-green-700', bg: 'bg-green-50', title: 'Đội ngũ', desc: 'Kỹ thuật viên được đào tạo bài bản, giàu kinh nghiệm thực tiễn, luôn tận tâm với công việc.' },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
                 <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center mb-4`}>

@@ -30,6 +30,14 @@ export default function UserChatbox() {
     const savedEmail = localStorage.getItem('chat_user_email');
     if (savedName) setUserName(savedName);
     if (savedEmail) setUserEmail(savedEmail);
+
+    // Listen for external open requests
+    const handleOpenChat = () => {
+      setIsOpen(true);
+      setIsMinimized(false);
+    };
+    window.addEventListener('open-customer-chat', handleOpenChat);
+    return () => window.removeEventListener('open-customer-chat', handleOpenChat);
   }, []);
 
   useEffect(() => {

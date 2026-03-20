@@ -1,5 +1,4 @@
 import siteConfig from '@/config/siteConfig';
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import LienHeClient from '@/components/contact/LienHeClient';
 
@@ -15,7 +14,6 @@ export default async function LienHePage() {
 
   return (
     <>
-      <Navbar config={config} />
       <main className="bg-white min-h-screen">
         <LienHeClient />
       </main>
