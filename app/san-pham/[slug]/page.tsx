@@ -45,7 +45,7 @@ export default async function SanPhamDetailPage({ params }: Props) {
     }
 
     // Fetch initial reviews
-    initialReviews = await fetchReviews(product.id, { limit: 10 }).catch(() => ({ data: [], pagination: { total: 0 } }));
+    initialReviews = await fetchReviews(product.id, { limit: 5 }).catch(() => ({ data: [], pagination: { total: 0 } }));
   } catch (err) {
     console.error('Error fetching supplementary data:', err);
   }

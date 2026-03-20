@@ -32,6 +32,30 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
   const [likesCount, setLikesCount] = useState(product.likesCount || 0);
   const [reviews, setReviews] = useState<any[]>(initialReviews?.data || []);
   const [reviewsCount, setReviewsCount] = useState(initialReviews?.pagination?.total || 0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const pageSize = 5;
+
+  const handlePageChange = async (page: number) => {
+    setLoadingReviews(true);
+    setCurrentPage(page);
+    try {
+      const { fetchReviews } = await import('@/services/publicService');
+      const res = await fetchReviews(product.id, { page, limit: pageSize });
+      setReviews(res.data || []);
+      // Scroll to reviews section
+      const reviewsElement = document.getElementById('product-reviews');
+      if (reviewsElement) {
+        const yOffset = -100; // Offset to keep the header visible
+        const y = reviewsElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
   const [ratingAvg, setRatingAvg] = useState(() => {
     if (product.ratingAvg > 0) return product.ratingAvg;
     if (initialReviews?.data?.length > 0) {
@@ -151,17 +175,22 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
         images: reviewImages
       });
 
-      if (res.success) {
+        if (res.success) {
         setReviewSuccess(true);
         // Add new review to local state
         const newReview = res.data;
-        setReviews((prev: any[]) => [newReview, ...prev]);
         
         // Recalculate average rating
         const newCount = reviewsCount + 1;
         const newAvg = (ratingAvg * reviewsCount + newReview.rating) / newCount;
         setRatingAvg(newAvg);
         setReviewsCount(newCount);
+
+        if (currentPage === 1) {
+          setReviews((prev: any[]) => [newReview, ...prev].slice(0, pageSize));
+        } else {
+          handlePageChange(1);
+        }
 
         // Reset form
         setReviewForm({ userName: '', email: '', rating: 5, content: '' });
@@ -497,7 +526,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
         )}
 
         {/* Product Reviews */}
-        <div className="mt-16 bg-white rounded-2xl shadow-sm p-6 md:p-10 border border-gray-100">
+        <div id="product-reviews" className="mt-16 bg-white rounded-2xl shadow-sm p-6 md:p-10 border border-gray-100">
           <div className="bg-gray-50/50 p-5 rounded-xl border-l-4 border-[#2b59ff] mb-10 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">ĐÁNH GIÁ SẢN PHẨM</h2>
             <div className="flex items-center gap-2">
@@ -512,8 +541,12 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Reviews List */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className={`lg:col-span-2 space-y-8 ${loadingReviews ? 'opacity-50 pointer-events-none' : ''} transition-opacity duration-300 relative`}>
+              {loadingReviews && (
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="w-10 h-10 border-4 border-[#2b59ff]/20 border-t-[#2b59ff] rounded-full animate-spin"></div>
+                </div>
+              )}
               {reviews.length > 0 ? (
                 reviews.map((r, i) => (
                   <div key={i} className="border-b border-gray-100 pb-8 last:border-0">
@@ -552,6 +585,60 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                 <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                   <p className="text-gray-500 font-medium">Chưa có đánh giá nào cho sản phẩm này.</p>
                   <p className="text-sm text-gray-400">Hãy là người đầu tiên chia sẻ cảm nhận của bạn!</p>
+                </div>
+              )}
+
+              {/* Pagination UI */}
+              {reviewsCount > pageSize && (
+                <div className="mt-12 flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1 || loadingReviews}
+                    className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-[#2b59ff] hover:text-[#2b59ff] disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:text-gray-400 transition-all shadow-sm bg-white"
+                  >
+                    <ChevronRight className="rotate-180" size={18} />
+                  </button>
+                  
+                  {Array.from({ length: Math.ceil(reviewsCount / pageSize) }).map((_, i) => {
+                    const page = i + 1;
+                    const totalPages = Math.ceil(reviewsCount / pageSize);
+                    
+                    // Show first, last, current, and neighbors
+                    if (
+                      page === 1 || 
+                      page === totalPages || 
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          disabled={loadingReviews}
+                          className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${currentPage === page ? 'bg-[#2b59ff] text-white shadow-lg shadow-blue-200 animate-in zoom-in-75 duration-300' : 'text-gray-500 hover:bg-gray-100 hover:text-[#2b59ff]'}`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    }
+                    
+                    // Show dots
+                    if (
+                      (page === 2 && currentPage > 3) || 
+                      (page === totalPages - 1 && currentPage < totalPages - 2)
+                    ) {
+                      return <span key={page} className="text-gray-300 px-1">...</span>;
+                    }
+
+                    return null;
+                  })}
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === Math.ceil(reviewsCount / pageSize) || loadingReviews}
+                    className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-[#2b59ff] hover:text-[#2b59ff] disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:text-gray-400 transition-all shadow-sm bg-white"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               )}
             </div>
