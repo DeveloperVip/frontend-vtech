@@ -11,7 +11,7 @@ export const metadata = {
   description: 'Tin tức và bài viết mới nhất từ Vitechs.',
 };
 
-export default async function TinTucLocalePage() {
+export default async function TinTucPage() {
   const config = siteConfig;
   const postsData = await fetchPosts({ limit: 9, page: 1 }).catch(() => ({ data: [], pagination: {} }));
   const posts = postsData.data || [];

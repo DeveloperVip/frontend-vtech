@@ -12,7 +12,7 @@ export const metadata = {
   description: 'Danh sách thiết bị đào tạo, giáo cụ trực quan của Vitechs.',
 };
 
-export default async function SanPhamLocalePage() {
+export default async function SanPhamPage() {
   const config = siteConfig;
   const [categoriesData, productsData] = await Promise.all([
     fetchCategories().catch(() => []),

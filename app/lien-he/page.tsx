@@ -9,7 +9,7 @@ export const metadata = {
   description: 'Liên hệ với Vitechs để được tư vấn giải pháp kỹ thuật chuyên nghiệp.',
 };
 
-export default async function LienHeLocalePage() {
+export default async function LienHePage() {
   const config = siteConfig;
 
   return (

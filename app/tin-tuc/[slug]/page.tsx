@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function TinTucDetailLocalePage({ params }: Props) {
+export default async function TinTucDetailPage({ params }: Props) {
   const config = siteConfig;
   const post = await fetchPostBySlug(params.slug).catch(() => null);
   if (!post) notFound();

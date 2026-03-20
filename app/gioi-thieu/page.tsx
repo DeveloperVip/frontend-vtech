@@ -10,7 +10,7 @@ export const metadata = {
   description: 'Tìm hiểu về Vitechs – đơn vị cung cấp thiết bị kỹ thuật chuyên nghiệp.',
 };
 
-export default async function GioiThieuLocalePage() {
+export default async function GioiThieuPage() {
   const config = siteConfig;
 
   const stats = [

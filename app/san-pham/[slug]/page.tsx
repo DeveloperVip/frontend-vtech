@@ -10,7 +10,7 @@ interface Props {
   params: { locale: string; slug: string };
 }
 
-export default async function SanPhamDetailLocalePage({ params }: Props) {
+export default async function SanPhamDetailPage({ params }: Props) {
   const config = siteConfig;
   
   // Fetch product by slug
