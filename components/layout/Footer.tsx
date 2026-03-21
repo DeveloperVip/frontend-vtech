@@ -79,7 +79,7 @@ export default function Footer({ config }: { config?: Record<string, string> }) 
 
       <div className="max-w-[1440px] mx-auto px-2 md:px-4 mt-12 pt-6 border-t border-[#d5e2fa] flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-[13px] text-gray-500 font-medium">
-          Copyright {new Date().getFullYear()} © Vitechs., JSC — All rights reserved.
+          Copyright {new Date().getFullYear()} © Vitechs., JSC — All rights reserved. | <Link href="/admin" className="ml-1 hover:text-[#2563EB]">Quản trị</Link>
         </p>
         <div className="flex items-center gap-4 text-[13px] text-gray-500">
           <Link href="#" className="hover:text-[#2563EB] transition-colors">Điều khoản dịch vụ</Link>

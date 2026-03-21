@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminGet, adminPost, adminPut } from '@/services/adminService';
 import ImageUpload from '@/components/ui/ImageUpload';
+import { Trash2 } from 'lucide-react';
 
 interface Category { id: number; name: string; }
 
@@ -15,6 +16,7 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
     name: '', description: '', price: '', priceType: 'contact',
     thumbnail: '', categoryId: '', isFeatured: false, isActive: true,
     metaTitle: '', metaDescription: '',
+    additionalInfo: [] as { id?: number; name: string; value: string; sortOrder: number }[],
   });
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,6 +38,7 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
           isActive: p.isActive !== false,
           metaTitle: p.metaTitle || '',
           metaDescription: p.metaDescription || '',
+          additionalInfo: p.additionalInfo || [],
         });
       });
     }
@@ -60,7 +63,7 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const f = (field: string, value: string | boolean) => setForm((prev) => ({ ...prev, [field]: value }));
+  const f = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
 
   return (
     <div className="max-w-2xl">
@@ -112,7 +115,58 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
             Hiển thị
           </label>
         </div>
-        <div className="flex gap-3 pt-2">
+        {/* Thông số kỹ thuật */}
+        <div className="border-t border-gray-100 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-800">Thông số kỹ thuật</h2>
+            <button
+              type="button"
+              onClick={() => f('additionalInfo', [...form.additionalInfo, { name: '', value: '', sortOrder: form.additionalInfo.length }])}
+              className="text-sm text-primary-700 font-medium hover:underline"
+            >
+              + Thêm thông số
+            </button>
+          </div>
+          
+          <div className="flex flex-col gap-3">
+            {form.additionalInfo.map((info, index) => (
+              <div key={index} className="flex gap-3 items-start">
+                <input
+                  placeholder="Tên (VD: Trọng lượng)"
+                  className="input-field flex-1"
+                  value={info.name}
+                  onChange={(e) => {
+                    const newInfo = [...form.additionalInfo];
+                    newInfo[index].name = e.target.value;
+                    f('additionalInfo', newInfo);
+                  }}
+                />
+                <input
+                  placeholder="Giá trị (VD: 15kg)"
+                  className="input-field flex-[2]"
+                  value={info.value}
+                  onChange={(e) => {
+                    const newInfo = [...form.additionalInfo];
+                    newInfo[index].value = e.target.value;
+                    f('additionalInfo', newInfo);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => f('additionalInfo', form.additionalInfo.filter((_, i) => i !== index))}
+                  className="p-2 text-primary-500 hover:bg-primary-50 rounded-lg"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            ))}
+            {form.additionalInfo.length === 0 && (
+              <p className="text-sm text-gray-400 italic">Chưa có thông số nào</p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-4">
           <button type="submit" disabled={loading}
             className="btn-primary bg-primary-700 hover:bg-primary-800 focus:ring-primary-500/50 flex-1">
             {loading ? 'Đang lưu...' : isNew ? 'Tạo sản phẩm' : 'Lưu thay đổi'}

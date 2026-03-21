@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { adminGet, adminDelete } from '@/services/adminService';
+import { adminGet, adminDelete, adminPut } from '@/services/adminService';
 import { Plus, Pencil, Trash2, RefreshCw, FolderOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -60,11 +60,11 @@ export default function AdminCategoriesPage() {
     if (!form.name.trim()) { toast.error('Vui lòng nhập tên danh mục'); return; }
     setSaving(true);
     try {
-      const { adminPost, adminPut } = await import('@/services/adminService');
       if (form.id) {
         await adminPut(`/categories/${form.id}`, { name: form.name, description: form.description });
         toast.success('Đã cập nhật danh mục');
       } else {
+        const { adminPost } = await import('@/services/adminService');
         await adminPost('/categories', { name: form.name, description: form.description });
         toast.success('Đã tạo danh mục');
       }
@@ -74,6 +74,17 @@ export default function AdminCategoriesPage() {
       toast.error('Lưu thất bại');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggle = async (cat: Category) => {
+    try {
+      const newValue = !cat.isActive;
+      await adminPut(`/categories/${cat.id}`, { isActive: newValue });
+      setCategories(prev => prev.map(c => c.id === cat.id ? { ...c, isActive: newValue } : c));
+      toast.success('Đã cập nhật trạng thái');
+    } catch {
+      toast.error('Cập nhật thất bại');
     }
   };
 
@@ -94,7 +105,6 @@ export default function AdminCategoriesPage() {
         </div>
       </div>
 
-      {/* Form thêm/sửa */}
       {form.show && (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
           <h2 className="font-bold text-gray-800 mb-4">
@@ -154,7 +164,7 @@ export default function AdminCategoriesPage() {
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Tên danh mục</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden sm:table-cell">Slug</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">Danh mục cha</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600 text-center">Trạng thái</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-600">Hành động</th>
                 </tr>
               </thead>
@@ -166,9 +176,11 @@ export default function AdminCategoriesPage() {
                     <td className="px-4 py-3 text-gray-500 hidden md:table-cell">
                       {cat.parent?.name || '—'}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cat.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {cat.isActive ? 'Hiện' : 'Ẩn'}
+                    <td className="px-4 py-3 text-center">
+                      <span 
+                        onClick={() => handleToggle(cat)}
+                        className={`inline-block w-28 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer select-none transition-all hover:opacity-80 text-center ${cat.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 opacity-60'}`}>
+                        {cat.isActive ? 'Hiển thị' : 'Không hiển thị'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
