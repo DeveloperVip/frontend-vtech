@@ -187,7 +187,7 @@ export default function NewsGrid({ initialPosts, sidebarPosts }: Props) {
       {/* Category filter */}
       <NewsCategoryFilter active={activeCategory} onChange={handleCategoryChange} />
 
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 pb-20">
         {loading && posts.length === 0 ? (
           /* Skeleton */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

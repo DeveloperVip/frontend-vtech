@@ -44,7 +44,7 @@ export default function GoalSection() {
       <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
         <motion.div
           variants={containerVariants}
           initial="hidden"

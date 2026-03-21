@@ -32,7 +32,7 @@ export default function HeroSection({ config }: { config?: Record<string, string
         background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)'
       }}
     >
-      <div className="relative max-w-7xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
+      <div className="relative max-w-[1440px] mx-auto px-2 md:px-4 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
         <motion.div 
           className="pr-10"
           variants={containerVariants}
@@ -90,9 +90,17 @@ export default function HeroSection({ config }: { config?: Record<string, string
           </div>
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.4 }}
-            className="absolute -top-4 -right-4 bg-white rounded-xl shadow-lg p-3 flex flex-col items-center justify-center min-w-[100px] z-10 transition-transform hover:-translate-y-1 hover:shadow-xl"
+            animate={{ 
+              opacity: 1, 
+              y: [0, -10, 0],
+              rotate: [0, 1, -1, 0]
+            }}
+            transition={{ 
+              opacity: { delay: 0.9, duration: 0.4 },
+              y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 5, ease: "easeInOut" }
+            }}
+            className="absolute -top-4 -right-4 bg-white rounded-xl shadow-lg p-3 flex flex-col items-center justify-center min-w-[100px] z-10 transition-transform shadow-xl"
           >
             <div className="flex items-center gap-1.5 font-bold text-gray-900 text-sm mb-1">
               <Star size={14} className="fill-yellow-400 text-yellow-400" /> 4.9/5
@@ -102,9 +110,17 @@ export default function HeroSection({ config }: { config?: Record<string, string
 
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.4 }}
-            className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 flex flex-col items-center justify-center min-w-[110px] z-10 transition-transform hover:-translate-y-1 hover:shadow-xl"
+            animate={{ 
+              opacity: 1, 
+              y: [0, 10, 0],
+              rotate: [0, -1, 1, 0]
+            }}
+            transition={{ 
+              opacity: { delay: 1.1, duration: 0.4 },
+              y: { repeat: Infinity, duration: 5, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 6, ease: "easeInOut" }
+            }}
+            className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 flex flex-col items-center justify-center min-w-[110px] z-10 transition-transform shadow-xl"
           >
             <p className="font-bold text-[#2563EB] text-xl mb-0.5">1000+</p>
             <p className="text-[#6b7280] text-[10px] font-medium uppercase tracking-wider">Khách hàng</p>

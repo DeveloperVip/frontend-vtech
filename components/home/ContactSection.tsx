@@ -71,7 +71,7 @@ export default function ContactSection() {
 
   return (
     <section className="bg-white py-20 px-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 animate-fade-in-up">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 animate-fade-in-up">
 
         <div className="flex flex-col">
           <h2 className="text-3xl md:text-[34px] font-extrabold text-blue-900 mb-6 tracking-tight uppercase">

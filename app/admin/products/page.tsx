@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { adminGet, adminDelete } from '@/services/adminService';
+import { adminGet, adminDelete, adminPut } from '@/services/adminService';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, StarOff } from 'lucide-react';
 
 interface Product { id: number; name: string; price: number | null; priceType: string; isActive: boolean; isFeatured: boolean; category?: { name: string }; createdAt: string; }
 
@@ -24,6 +24,18 @@ export default function AdminProductsPage() {
     if (!confirm('Xóa sản phẩm này?')) return;
     await adminDelete(`/products/${id}`);
     load();
+  };
+
+  const handleToggle = async (product: Product, field: 'isFeatured' | 'isActive') => {
+    try {
+      const newValue = !product[field];
+      await adminPut(`/products/${product.id}`, { [field]: newValue });
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? { ...p, [field]: newValue } : p))
+      );
+    } catch (err) {
+      console.error('Lỗi khi cập nhật:', err);
+    }
   };
 
   return (
@@ -57,11 +69,19 @@ export default function AdminProductsPage() {
                     p.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price) : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  {p.isFeatured ? <span className="text-yellow-600 text-xs font-medium">⭐ Nổi bật</span> : <span className="text-gray-300">—</span>}
+                  <button 
+                    onClick={() => handleToggle(p, 'isFeatured')}
+                    className={`flex items-center gap-1 transition-colors ${p.isFeatured ? 'text-yellow-600' : 'text-gray-300 opacity-40'}`}
+                  >
+                    {p.isFeatured ? <Star size={16} className="fill-current" /> : <StarOff size={16} />}
+                    <span className="text-[11px] font-medium leading-none">Nổi bật</span>
+                  </button>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {p.isActive ? 'Hiển thị' : 'Ẩn'}
+                  <span 
+                    onClick={() => handleToggle(p, 'isActive')}
+                    className={`inline-block w-28 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer select-none transition-all hover:opacity-80 text-center ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 opacity-60'}`}>
+                    {p.isActive ? 'Hiển thị' : 'Không hiển thị'}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right flex justify-end gap-1">

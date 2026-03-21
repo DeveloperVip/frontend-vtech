@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import {
   LayoutDashboard, Package, FolderOpen, FileText,
-  MessageSquare, LogOut, ChevronRight, MessageCircle,
+  MessageSquare, LogOut, ChevronRight, MessageCircle, Star
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -15,6 +15,7 @@ const menuItems = [
   { label: 'Danh mục', href: '/admin/categories', icon: <FolderOpen size={18} /> },
   { label: 'Tin tức', href: '/admin/posts', icon: <FileText size={18} /> },
   { label: 'Chat hỗ trợ', href: '/admin/chats', icon: <MessageCircle size={18} /> },
+  { label: 'Đánh giá', href: '/admin/reviews', icon: <Star size={18} /> },
   { label: 'Liên hệ', href: '/admin/contacts', icon: <MessageSquare size={18} /> },
 ];
 

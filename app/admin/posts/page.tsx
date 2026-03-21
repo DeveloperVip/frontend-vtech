@@ -1,16 +1,17 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { adminGet, adminDelete } from '@/services/adminService';
+import { adminGet, adminDelete, adminPut } from '@/services/adminService';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, RefreshCw, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, RefreshCw, Search, Star, StarOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Post {
   id: number;
   title: string;
   slug: string;
-  status: string;
+  isPublished: boolean;
+  isFeatured: boolean;
   publishedAt: string | null;
   author: { fullName: string } | null;
 }
@@ -49,25 +50,24 @@ export default function AdminPostsPage() {
     }
   };
 
+  const handleToggle = async (post: Post, field: 'isPublished' | 'isFeatured') => {
+    try {
+      const newValue = !post[field];
+      const payload: any = { [field]: newValue };
+      if (field === 'isPublished' && newValue && !post.publishedAt) {
+        payload.publishedAt = new Date();
+      }
+      await adminPut(`/posts/${post.id}`, payload);
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, ...payload } : p));
+      toast.success('Đã cập nhật bài viết');
+    } catch {
+      toast.error('Cập nhật thất bại');
+    }
+  };
+
   const filtered = posts.filter(p =>
     p.title.toLowerCase().includes(search.toLowerCase())
   );
-
-  const statusBadge = (status: string) => {
-    const map: Record<string, string> = {
-      published: 'bg-green-100 text-green-700',
-      draft: 'bg-gray-100 text-gray-600',
-      archived: 'bg-yellow-100 text-yellow-700',
-    };
-    const label: Record<string, string> = {
-      published: 'Đã đăng', draft: 'Nháp', archived: 'Lưu trữ'
-    };
-    return (
-      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${map[status] || 'bg-gray-100 text-gray-600'}`}>
-        {label[status] || status}
-      </span>
-    );
-  };
 
   return (
     <div className="p-6">
@@ -113,7 +113,7 @@ export default function AdminPostsPage() {
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Tiêu đề</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">Tác giả</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Nổi bật</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden sm:table-cell">Ngày đăng</th>
                   <th className="text-right px-4 py-3 font-semibold text-gray-600">Hành động</th>
@@ -126,14 +126,26 @@ export default function AdminPostsPage() {
                       <p className="font-medium text-gray-900 truncate max-w-xs">{post.title}</p>
                       <p className="text-xs text-gray-400">{post.slug}</p>
                     </td>
-                    <td className="px-4 py-3 text-gray-600 hidden md:table-cell">
-                      {post.author?.fullName || '—'}
+                    <td className="px-4 py-3">
+                      <button 
+                        onClick={() => handleToggle(post, 'isFeatured')}
+                        className={`flex items-center gap-1 transition-colors ${post.isFeatured ? 'text-yellow-500' : 'text-gray-300 opacity-40'}`}
+                      >
+                        {post.isFeatured ? <Star size={16} className="fill-current" /> : <StarOff size={16} />}
+                        <span className="text-[11px] font-medium leading-none">Nổi bật</span>
+                      </button>
                     </td>
-                    <td className="px-4 py-3">{statusBadge(post.status)}</td>
+                    <td className="px-4 py-3">
+                      <span 
+                        onClick={() => handleToggle(post, 'isPublished')}
+                        className={`inline-block w-28 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer select-none transition-all hover:opacity-80 text-center ${post.isPublished ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 opacity-60'}`}>
+                        {post.isPublished ? 'Đã đăng' : 'Không hiển thị'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">
                       {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : '—'}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Link href={`/admin/posts/${post.id}`}
                           className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors">

@@ -61,7 +61,7 @@ export default async function TinTucDetailPage({ params }: Props) {
 
       <main className="bg-white">
         {/* Breadcrumb */}
-        <div className="max-w-7xl mx-auto px-4 pt-6 pb-2">
+        <div className="max-w-[1440px] mx-auto px-2 md:px-4 pt-6 pb-2">
           <nav className="flex items-center gap-2 text-xs text-gray-400">
             <Link href="/">Trang chủ</Link>
             <span>/</span>
@@ -77,7 +77,7 @@ export default async function TinTucDetailPage({ params }: Props) {
           </nav>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-[1440px] mx-auto px-2 md:px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12">
 
             {/* ARTICLE */}

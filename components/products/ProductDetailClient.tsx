@@ -15,7 +15,8 @@ import {
   Star,
   Send,
   X,
-  Plus
+  Plus,
+  ThumbsUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductImage360 from './components/product-image-360';
@@ -221,6 +222,22 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
     }
   };
 
+  const handleLikeReview = async (reviewId: number) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/api/v1/product-reviews/${reviewId}/like`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReviews((prev: any[]) => prev.map(r => 
+          r.id === reviewId ? { ...r, likeCount: data.data.likeCount } : r
+        ));
+      }
+    } catch (err) {
+      console.error('Error liking review:', err);
+    }
+  };
+
   // Related Products Scroll Logic
   const relatedRef = React.useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -271,7 +288,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
 
   return (
     <div className="bg-[#f5f7fa] min-h-screen pb-12">
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 py-4">
 
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-[13px] text-gray-600 mb-4 overflow-x-auto whitespace-nowrap scrollbar-none">
@@ -482,6 +499,36 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
           </div>
         </div>
 
+        {/* Specifications Table */}
+        {product.additionalInfo && product.additionalInfo.length > 0 && (
+          <div className="mt-8 bg-white rounded-2xl shadow-sm p-6 md:p-10 border border-gray-100">
+            <div className="bg-gray-50 p-5 rounded-xl border-l-4 border-[#2b59ff] mb-8 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">THÔNG SỐ KỸ THUẬT CHI TIẾT</h2>
+              <div className="h-px flex-1 bg-gray-200 mx-6 opacity-50 hidden md:block" />
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all">
+              <table className="w-full text-sm text-left border-collapse">
+                <tbody>
+                  {product.additionalInfo.map((info: any, index: number) => (
+                    <tr 
+                      key={info.id} 
+                      className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} border-b border-gray-100 last:border-0 transition-colors group`}
+                    >
+                      <th className="py-4 px-6 font-bold text-gray-700 w-1/3 md:w-1/4 bg-gray-50/40 border-r border-gray-100 transition-colors">
+                        {info.name}
+                      </th>
+                      <td className="py-4 px-6 text-gray-600 font-semibold">
+                        {info.value}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* Detailed Info Section */}
         <div className="mt-8 bg-white rounded-2xl shadow-sm p-6 md:p-10 border border-gray-100">
           <div className="bg-gray-50 p-5 rounded-xl border-l-4 border-[#2b59ff] mb-10 flex items-center justify-between">
@@ -563,13 +610,6 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               </div>
               <span className="text-sm font-bold text-gray-900">{ratingAvg.toFixed(1)}/5</span>
               <span className="text-sm text-gray-500">({reviewsCount} đánh giá)</span>
-              <div className="flex items-center">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} size={16} className={`${star <= Math.round(ratingAvg) ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
-                ))}
-              </div>
-              <span className="text-sm font-bold text-gray-900">{ratingAvg.toFixed(1)}/5</span>
-              <span className="text-sm text-gray-500">({reviewsCount} đánh giá)</span>
             </div>
           </div>
 
@@ -597,6 +637,13 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                           </div>
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleLikeReview(r.id)}
+                        className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#2b59ff] transition-all bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100/50 hover:border-[#2b59ff]/30 active:scale-95 group"
+                      >
+                        <ThumbsUp size={14} className="group-hover:-translate-y-0.5 transition-transform" />
+                        Hữu ích {r.likeCount > 0 && <span>({r.likeCount})</span>}
+                      </button>
                     </div>
                     <p className="text-gray-600 leading-relaxed pl-[52px] mb-4">{r.content}</p>
                     {r.ProductReviewImages && r.ProductReviewImages.length > 0 && (
