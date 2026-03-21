@@ -21,7 +21,7 @@ const cardVariants = {
 
 export default function AboutTeam() {
   return (
-    <div className="max-w-7xl mx-auto px-4 text-center">
+    <div className="max-w-[1440px] mx-auto px-2 md:px-4 text-center mb-16">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}

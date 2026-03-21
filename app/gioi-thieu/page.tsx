@@ -8,6 +8,7 @@ import AboutServices from '@/components/about/AboutServices';
 import AboutTeam from '@/components/about/AboutTeam';
 import AboutVision from '@/components/about/AboutVision';
 import AboutOrgChart from '@/components/about/AboutOrgChart';
+import PartnersSection from '@/components/home/PartnersSection';
 
 export const revalidate = 60;
 
@@ -26,7 +27,7 @@ export default async function GioiThieuPage() {
 
         {/* Về Chúng Tôi */}
         <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="max-w-[1440px] mx-auto px-2 md:px-4 text-center">
             <div className="mb-20">
               <h2 className="text-3xl md:text-5xl font-extrabold text-blue-900 uppercase tracking-wider mb-8">Về Chúng Tôi</h2>
             </div>
@@ -57,9 +58,14 @@ export default async function GioiThieuPage() {
           </div>
         </section>
 
+        {/* Sơ Đồ Tổ Chức (Client Component for Animations) */}
+        <section className="py-24 bg-white border-t border-gray-50">
+          <AboutOrgChart />
+        </section>
+
         {/* Lĩnh Vực Hoạt Động (Client Component for Animations) */}
         <section className="py-24 bg-white border-t border-gray-50">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[1440px] mx-auto px-2 md:px-4">
             <div className="text-center mb-20">
               <h2 className="text-3xl md:text-5xl font-extrabold text-blue-900 uppercase tracking-wider mb-8">Lĩnh Vực Hoạt Động</h2>
               <p className="text-[#666] font-medium italic text-[15px]">Chúng tôi cung cấp đa dạng các sản phẩm và dịch vụ chất lượng cao</p>
@@ -71,7 +77,7 @@ export default async function GioiThieuPage() {
 
         {/* Dịch vụ chất lượng cao (Client Component for Animations) */}
         <section className="py-24 bg-white border-t border-gray-50">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[1440px] mx-auto px-2 md:px-4">
             <AboutServices />
           </div>
         </section>
@@ -83,7 +89,7 @@ export default async function GioiThieuPage() {
 
         {/* Tầm Nhìn & Sứ Mệnh (Client Component for Animations) */}
         <section className="py-24 bg-white border-t border-gray-50">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[1440px] mx-auto px-2 md:px-4">
             <div className="text-center mb-20">
               <h2 className="text-3xl md:text-4xl font-extrabold text-[#1e293b] mb-4">Tầm Nhìn & Sứ Mệnh</h2>
               <div className="w-16 h-1 bg-blue-600 mx-auto mb-8 rounded-full" />
@@ -94,10 +100,8 @@ export default async function GioiThieuPage() {
           </div>
         </section>
 
-        {/* Sơ Đồ Tổ Chức (Client Component for Animations) */}
-        <section className="py-24 bg-white border-t border-gray-50">
-          <AboutOrgChart />
-        </section>
+        {/* Đối tác (Client Component for Animations) */}
+        <PartnersSection />
       </main>
       <Footer config={config} />
     </>

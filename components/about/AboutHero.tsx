@@ -34,7 +34,7 @@ export default function AboutHero({ config }: AboutHeroProps) {
       className="relative overflow-hidden pt-20 pb-16 lg:pt-28 lg:pb-24 text-white"
       style={{ background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)' }}
     >
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 relative z-10 text-white text-center">
         <motion.div 
           variants={containerVariants}
           initial="hidden"

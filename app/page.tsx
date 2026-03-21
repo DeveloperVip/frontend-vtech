@@ -6,7 +6,6 @@ import HeroSection from '@/components/home/HeroSection';
 import AboutSection from '@/components/home/AboutSection';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import GoalSection from '@/components/home/GoalSection';
-import PartnersSection from '@/components/home/PartnersSection';
 import LienHeClient from '@/components/contact/LienHeClient';
 import ContactSection from '@/components/home/ContactSection';
 import CustomerFeedback from '@/components/home/CustomerFeedback';
@@ -32,7 +31,6 @@ export default async function Home() {
         <GoalSection />
         <FeaturedProducts products={productsData.data || []} />
         <CustomerFeedback />
-        <PartnersSection />
         <ContactSection />
         <section id="lien-he" className="bg-white">
           {/* <LienHeClient /> */}

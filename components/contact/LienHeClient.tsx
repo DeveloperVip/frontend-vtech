@@ -148,7 +148,7 @@ export default function LienHeClient() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-7xl mx-auto px-6 text-center"
+          className="max-w-[1440px] mx-auto px-2 md:px-4 text-center"
         >
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Liên Hệ Với Chúng Tôi</h1>
           <p className="text-blue-100 text-base max-w-xl mx-auto">
@@ -158,7 +158,7 @@ export default function LienHeClient() {
       </div>
 
       {/* Info Cards */}
-      <div className="max-w-6xl mx-auto px-4 -mt-10 mb-12">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 -mt-10 mb-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {infoCards.map((card, i) => (
             <motion.div
@@ -181,7 +181,7 @@ export default function LienHeClient() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 pb-16">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <motion.div
             initial={{ opacity: 0, x: -30 }}

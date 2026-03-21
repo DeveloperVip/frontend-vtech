@@ -9,7 +9,7 @@ export default function Footer({ config }: { config?: Record<string, string> }) 
         background: 'linear-gradient(90deg,rgba(232, 232, 232, 1) 0%, rgba(204, 217, 237, 1) 0%)' 
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3 mb-5">
@@ -77,7 +77,7 @@ export default function Footer({ config }: { config?: Record<string, string> }) 
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 mt-12 pt-6 border-t border-[#d5e2fa] flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 mt-12 pt-6 border-t border-[#d5e2fa] flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-[13px] text-gray-500 font-medium">
           Copyright {new Date().getFullYear()} © Vitechs., JSC — All rights reserved.
         </p>

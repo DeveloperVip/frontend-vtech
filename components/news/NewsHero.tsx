@@ -37,7 +37,7 @@ export default function NewsHero({ post }: { post: Post | null }) {
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
       {/* Content */}
-      <div className="relative h-full max-w-7xl mx-auto px-4 md:px-6 flex flex-col justify-end pb-12">
+      <div className="relative h-full max-w-[1440px] mx-auto px-2 md:px-4 flex flex-col justify-end pb-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -53,7 +53,7 @@ export default function NewsHero({ post }: { post: Post | null }) {
           )}
 
           {/* Title */}
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4 drop-shadow-lg">
+          <h2 className="text-2xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4 drop-shadow-lg">
             {post.title}
           </h2>
 

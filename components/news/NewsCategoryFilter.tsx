@@ -47,7 +47,7 @@ export default function NewsCategoryFilter({ active, onChange }: Props) {
 
   return (
     <div className="sticky top-[80px] z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 relative">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 py-8 relative">
         {/* Left arrow */}
         {canScrollLeft && (
           <button

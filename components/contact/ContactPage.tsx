@@ -4,7 +4,7 @@ import { CheckCircle2 } from 'lucide-react';
 export default function ContactPage() {
   return (
     <main className="bg-white min-h-screen pt-24 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 mb-16">
         <h1 className="text-3xl md:text-4xl font-extrabold text-[#0B3B24] mb-8 uppercase tracking-wide">
           HỢP TÁC CÙNG VITECHS
         </h1>

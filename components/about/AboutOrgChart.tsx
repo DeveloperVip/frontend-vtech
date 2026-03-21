@@ -52,7 +52,7 @@ const technicalDetails = [
 
 export default function AboutOrgChart() {
   return (
-    <div className="max-w-7xl mx-auto px-4">
+    <div className="max-w-[1440px] mx-auto px-2 md:px-4">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ export default function AboutOrgChart() {
         ))}
 
         {/* Tier 3: PGĐs and Middle Dept */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-6xl relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-[1440px] relative">
           {(orgData[2].subtitle as any).map((item: any, idx: number) => (
             <div key={idx} className="flex flex-col items-center">
               <div className="h-8 w-0.5 bg-blue-200 hidden md:block" />
@@ -130,7 +130,7 @@ export default function AboutOrgChart() {
         </div>
 
         {/* Technical Sub-departments with Connections - Tier 4 */}
-        <div className="w-full max-w-6xl relative mt-0">
+        <div className="w-full max-w-[1440px] relative mt-0">
            {/* Horizontal Branching Line - Top-most part */}
            <div className="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-[88%] h-0.5 bg-blue-200" />
 

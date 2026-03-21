@@ -98,7 +98,7 @@ export default function CustomerFeedback() {
 
   return (
     <section className="bg-white py-16 animate-fade-in-up">
-      <div className="max-w-7xl mx-auto px-4 text-center mb-10">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 text-center mb-10">
         <h2 className="text-3xl md:text-[34px] font-extrabold text-blue-900 mb-4 uppercase tracking-tight">
           Phản Hồi Từ Khách Hàng
         </h2>

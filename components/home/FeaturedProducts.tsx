@@ -19,7 +19,7 @@ export default function FeaturedProducts({ products }: { products: Product[] }) 
 
   return (
     <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4">
         <div className="flex items-center justify-between mb-10">
           <div>
             <h2 className="text-3xl font-bold text-blue-900">Sản phẩm nổi bật</h2>
