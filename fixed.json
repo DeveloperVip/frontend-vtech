@@ -342,6 +342,10 @@
                     "type": "string",
                     "example": "Hỏi về sản phẩm"
                   },
+                  "phone": {
+                    "type": "number",
+                    "example": "Số điện thoại liên hệ"
+                  },
                   "message": {
                     "type": "string",
                     "example": "Tôi muốn hỏi thêm thông tin..."
@@ -2041,6 +2045,29 @@
         }
       }
     },
+    "/product-reviews/{id}/like": {
+      "post": {
+        "summary": "Thích/Bỏ thích đánh giá",
+        "tags": [
+          "Product Reviews"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công"
+          }
+        }
+      }
+    },
     "/products": {
       "get": {
         "summary": "Lấy danh sách sản phẩm",
@@ -2584,6 +2611,39 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/upload/public": {
+      "post": {
+        "summary": "Upload ảnh công khai (dành cho người dùng đánh giá)",
+        "description": "Upload ảnh lên Cloudinary không cần token (cho phép khách hàng gửi ảnh thực tế)",
+        "tags": [
+          "Upload"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload thành công"
           }
         }
       }

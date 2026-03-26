@@ -121,4 +121,23 @@ export class UploadService {
             mediaType: 'multipart/form-data',
         });
     }
+    /**
+     * Upload ảnh công khai (dành cho người dùng đánh giá)
+     * Upload ảnh lên Cloudinary không cần token (cho phép khách hàng gửi ảnh thực tế)
+     * @param formData
+     * @returns any Upload thành công
+     * @throws ApiError
+     */
+    public static postUploadPublic(
+        formData: {
+            file: Blob;
+        },
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/upload/public',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+        });
+    }
 }

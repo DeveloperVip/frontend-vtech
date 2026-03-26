@@ -121,4 +121,21 @@ export class ProductReviewsService {
             },
         });
     }
+    /**
+     * Thích/Bỏ thích đánh giá
+     * @param id
+     * @returns any Thành công
+     * @throws ApiError
+     */
+    public static postProductReviewsLike(
+        id: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/product-reviews/{id}/like',
+            path: {
+                'id': id,
+            },
+        });
+    }
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { submitContact } from '@/services/publicService';
 import { CheckCircle2, Send, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ContactsService } from '@/src/api/generated';
 
 const infoCards = [
   {
@@ -56,7 +57,7 @@ const whyUs = [
 ];
 //vị trí map//
 export default function LienHeClient() {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', subject: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,16 +67,20 @@ export default function LienHeClient() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = 'Vui lòng nhập họ tên';
-    const phoneTrimmed = form.phone.replace(/\s+/g, '');
-    if (!phoneTrimmed) {
-      e.phone = 'Vui lòng nhập số điện thoại';
-    } else if (!/^[0-9+() -]{10,}$/.test(form.phone.trim())) {
+    if (!form.fullName.trim()) e.name = 'Vui lòng nhập họ tên';
+    // const phoneTrimmed = form.phone.replace(/\s+/g, '');
+    // if (!phoneTrimmed) {
+    //   e.phone = 'Vui lòng nhập số điện thoại';
+    // } else 
+    if (form?.phone && !/^[0-9+() -]{10,}$/.test(form.phone.trim())) {
       e.phone = 'Số điện thoại không hợp lệ (ít nhất 10 số)';
     }
     if (!form.email.trim() || !form.email.includes('@')) {
       e.email = 'Vui lòng nhập email hợp lệ';
     }
+    // if (!form.subject.trim()) {
+    //   e.subject = 'Tên sản phẩm muốn tư vấn';
+    // }
     if (!form.message.trim()) e.message = 'Vui lòng nhập nội dung';
     return e;
   };
@@ -87,9 +92,9 @@ export default function LienHeClient() {
     setErrors({});
     setLoading(true);
     try {
-      await submitContact(form);
+      await ContactsService.postContacts({ ...form, phone: Number(form?.phone) });
       setSuccess(true);
-      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+      setForm({ fullName: '', email: '', phone: '', subject: '', message: '' });
     } catch {
       setErrors({ submit: 'Gửi thất bại, vui lòng thử lại sau.' });
     } finally {
@@ -98,7 +103,7 @@ export default function LienHeClient() {
   };
 
   const handleNameBlur = () => {
-    if (!form.name.trim()) {
+    if (!form.fullName.trim()) {
       setErrors(prev => ({ ...prev, name: 'Vui lòng nhập họ tên' }));
     } else {
       setErrors(prev => { const { name, ...rest } = prev; return rest; });
@@ -140,7 +145,7 @@ export default function LienHeClient() {
     <div className="w-full bg-gray-50 min-h-screen">
 
       {/* Header Banner */}
-      <div 
+      <div
         className="text-white pt-20 pb-16"
         style={{ background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)' }}
       >
@@ -209,7 +214,7 @@ export default function LienHeClient() {
                 <div>
                   <label className={labelCls}>Họ và Tên *</label>
                   <input
-                    value={form.name}
+                    value={form.fullName}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     onBlur={handleNameBlur}
                     placeholder="Nhập họ và tên của bạn"
@@ -243,7 +248,18 @@ export default function LienHeClient() {
                   />
                   {errors.phone && <span className={errCls}>{errors.phone}</span>}
                 </div>
-
+                <div>
+                  <label className={labelCls}>Sản phẩm cần tư vấn</label>
+                  <input
+                    // type="text"
+                    value={form.subject}
+                    onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+                    // onBlur={handlePhoneBlur}
+                    placeholder="Nhập sản phẩm cần tư vấn"
+                    className={`${inputCls}`}
+                  />
+                  {<span className={errCls}>{errors.subject}</span>}
+                </div>
                 <div>
                   <label className={labelCls}>Nội Dung *</label>
                   <textarea

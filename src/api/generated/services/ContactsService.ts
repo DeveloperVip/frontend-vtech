@@ -17,6 +17,7 @@ export class ContactsService {
             fullName: string;
             email: string;
             subject?: string;
+            phone?: number;
             message: string;
         },
     ): CancelablePromise<any> {
