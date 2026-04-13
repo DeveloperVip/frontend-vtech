@@ -11,6 +11,7 @@ export { AuthService } from './services/AuthService';
 export { CategoriesService } from './services/CategoriesService';
 export { ChatService } from './services/ChatService';
 export { ContactsService } from './services/ContactsService';
+export { DefaultService } from './services/DefaultService';
 export { PostsService } from './services/PostsService';
 export { ProductAdditionalInfoService } from './services/ProductAdditionalInfoService';
 export { ProductAttributesService } from './services/ProductAttributesService';

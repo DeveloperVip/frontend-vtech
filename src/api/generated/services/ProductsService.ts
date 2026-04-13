@@ -154,4 +154,176 @@ export class ProductsService {
             },
         });
     }
+    /**
+     * Tạo mô hình 3D (.glb) từ ảnh sản phẩm
+     * @param id
+     * @param requestBody
+     * @returns any Đã nhận yêu cầu, đang xử lý ngầm
+     * @throws ApiError
+     */
+    public static postProductsGenerate3D(
+        id: number,
+        requestBody?: {
+            /**
+             * URL ảnh cụ thể để tạo 3D (nếu để trống sẽ dùng ảnh đầu tiên của sản phẩm)
+             */
+            imageUrl?: string;
+        },
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/products/{id}/generate-3d',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * Tạo mô hình 3D preview (chưa gán sản phẩm)
+     * @param requestBody
+     * @returns any Đã nhận yêu cầu
+     * @throws ApiError
+     */
+    public static postProducts3DPreview(
+        requestBody?: {
+            imageUrl: string;
+        },
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/products/3d-preview',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * Kiểm tra trạng thái task tạo 3D (poll endpoint)
+     * Gọi endpoint này định kỳ để kiểm tra tiến trình tạo 3D.
+     * - modelId là ID của ProductModel3D record (trả về từ generate-3d hoặc 3d-preview)
+     * - Status: pending → processing → succeeded | failed
+     * - Khi succeeded: modelUrl chứa URL file GLB có màu
+     *
+     * @param modelId ID của ProductModel3D record (không phải productId)
+     * @returns any Trạng thái hiện tại
+     * @throws ApiError
+     */
+    public static getProducts3DStatus(
+        modelId: number,
+    ): CancelablePromise<{
+        success?: boolean;
+        data?: {
+            modelId?: number;
+            productId?: number | null;
+            status?: 'pending' | 'processing' | 'succeeded' | 'failed';
+            /**
+             * URL file GLB khi succeeded
+             */
+            modelUrl?: string | null;
+            errorMessage?: string | null;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/products/3d-status/{modelId}',
+            path: {
+                'modelId': modelId,
+            },
+        });
+    }
+    /**
+     * Kiểm tra trạng thái và lấy kết quả tạo mô hình 3D
+     * @param id ID sản phẩm hoặc ID task 3D
+     * @throws ApiError
+     */
+    public static getProducts3DStatus1(
+        id: number,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/products/{id}/3d-status',
+            path: {
+                'id': id,
+            },
+        });
+    }
+    /**
+     * Tạo mô hình 3D preview từ nhiều góc ảnh (multi-view)
+     * Hỗ trợ tối đa 4 ảnh: front (bắt buộc), back, left, right
+     * @param requestBody
+     * @returns any Đã nhận yêu cầu
+     * @throws ApiError
+     */
+    public static postProducts3DPreviewViews(
+        requestBody: {
+            views: {
+                front: string;
+                back?: string;
+                left?: string;
+                right?: string;
+            };
+        },
+    ): CancelablePromise<{
+        success?: boolean;
+        data?: {
+            modelId?: number;
+            status?: string;
+            estimatedTime?: string;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/products/3d-preview',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * Thử lại tạo 3D cho sản phẩm hoặc task cụ thể
+     * @param id ID task 3D (modelId)
+     * @throws ApiError
+     */
+    public static postProducts3DRetry(
+        id: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/products/{id}/3d-retry',
+            path: {
+                'id': id,
+            },
+        });
+    }
+    /**
+     * Lưu tạm các ảnh hướng 3D để persistence
+     * @param requestBody
+     * @returns any Thành công
+     * @throws ApiError
+     */
+    public static postProducts3DStatusSaveViews(
+        requestBody: {
+            productId?: number | null;
+            views: {
+                front: string;
+                back?: string;
+                left?: string;
+                right?: string;
+            };
+        },
+    ): CancelablePromise<{
+        success?: boolean;
+        data?: {
+            modelId?: number;
+            productId?: number | null;
+            sourceViews?: any;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/products/3d-status/save-views',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
 }

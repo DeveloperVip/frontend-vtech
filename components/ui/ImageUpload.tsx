@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Upload, X, Loader2, Link2, ImageOff } from 'lucide-react';
+import { Upload, X, Loader2, Link2, ImageOff, UploadCloudIcon, Crop } from 'lucide-react';
 import { getToken } from '@/services/adminService';
+import ImageCropModal from './ImageCropModal';
 
 interface Props {
   value: string;
@@ -18,15 +19,48 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh đại di�
   const [preview, setPreview] = useState('');
   const [imgError, setImgError] = useState(false);
 
-  // Reset lỗi ảnh khi value thay đổi
+  // Crop state
+  const [showCrop, setShowCrop] = useState(false);
+  const [cropSrc, setCropSrc] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   useEffect(() => {
     setImgError(false);
   }, [value, preview]);
 
-  const handleFile = async (file: File) => {
+  // Called when user selects a file → open crop modal first
+  const handleFileSelected = (file: File) => {
     if (!file) return;
+    const blobUrl = URL.createObjectURL(file);
+    setCropSrc(blobUrl);
+    setPendingFile(file);
+    setShowCrop(true);
+  };
+
+  // Called after cropping is done
+  const handleCropDone = async (croppedBlob: Blob) => {
+    setShowCrop(false);
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc('');
+
+    const croppedFile = new File(
+      [croppedBlob],
+      pendingFile?.name?.replace(/\.[^.]+$/, '.webp') || 'image.webp',
+      { type: 'image/webp' }
+    );
+    setPendingFile(null);
+    await uploadFile(croppedFile);
+  };
+
+  const handleCropCancel = () => {
+    setShowCrop(false);
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc('');
+    setPendingFile(null);
+  };
+
+  const uploadFile = async (file: File) => {
     setError('');
-    // Hiện preview ngay lập tức bằng blob URL
     const blobUrl = URL.createObjectURL(file);
     setPreview(blobUrl);
     setUploading(true);
@@ -43,8 +77,8 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh đại di�
       );
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Upload thất bại');
-      onChange(data.url);          // URL thực từ server
-      setPreview('');              // bỏ blob, dùng URL server
+      onChange(data.url);
+      setPreview('');
       URL.revokeObjectURL(blobUrl);
     } catch (e: unknown) {
       setError((e as Error).message || 'Upload thất bại');
@@ -62,13 +96,32 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh đại di�
     if (inputRef.current) inputRef.current.value = '';
   };
 
+  // Open crop on existing image
+  const handleEditCrop = () => {
+    const src = preview || value;
+    if (!src) return;
+    setCropSrc(src);
+    setPendingFile(null);
+    setShowCrop(true);
+  };
+
+  // After cropping an existing image (no original file)
+  const handleCropExistingDone = async (croppedBlob: Blob) => {
+    setShowCrop(false);
+    setCropSrc('');
+    const croppedFile = new File([croppedBlob], 'cropped.webp', { type: 'image/webp' });
+    await uploadFile(croppedFile);
+  };
+
   const displayImg = preview || value;
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <div className="flex items-center gap-2">
+        <UploadCloudIcon className="text-primary-600" size={20} />
+        <label className="block text-lg font-bold text-gray-800 mb-1.5">{label}</label>
+      </div>
 
-      {/* Nếu đã có ảnh → hiện preview + nút đổi */}
       {displayImg ? (
         <div className="flex items-start gap-4">
           <div className="relative">
@@ -109,20 +162,26 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh đại di�
               className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition flex items-center gap-1.5">
               <Link2 size={13} /> Nhập URL
             </button>
+            <button
+              type="button"
+              onClick={handleEditCrop}
+              disabled={uploading || imgError}
+              className="text-xs px-3 py-1.5 border border-primary-200 bg-primary-50 rounded-lg hover:bg-primary-100 text-primary-700 font-semibold transition flex items-center gap-1.5 disabled:opacity-40">
+              <Crop size={13} /> Cắt ảnh
+            </button>
           </div>
           <input ref={inputRef} type="file" accept="image/*" className="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelected(f); }} />
         </div>
       ) : (
-        /* Chưa có ảnh → vùng kéo thả */
         <div>
           <div
-            onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}
+            onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFileSelected(f); }}
             onDragOver={e => e.preventDefault()}
             onClick={() => !uploading && inputRef.current?.click()}
             className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition border-gray-200 hover:border-primary-400 hover:bg-primary-50">
             <input ref={inputRef} type="file" accept="image/*" className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelected(f); }} />
             <Upload size={28} className="mx-auto text-gray-300 mb-2" />
             <p className="text-sm font-medium text-gray-600">Kéo thả hoặc <span className="text-primary-700 underline">click để chọn</span></p>
             <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP, GIF – tối đa 5MB</p>
@@ -136,7 +195,6 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh đại di�
         </div>
       )}
 
-      {/* URL input (toggle) — chỉ hiện khi bấm nút "Nhập URL" */}
       {showUrlInput && (
         <div className="mt-2 flex gap-2 items-center">
           <Link2 size={14} className="text-gray-400 shrink-0" />
@@ -150,6 +208,15 @@ export default function ImageUpload({ value, onChange, label = 'Ảnh đại di�
       )}
 
       {error && <p className="text-red-500 text-xs mt-1.5">⚠ {error}</p>}
+
+      {/* Crop Modal */}
+      {showCrop && cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          onCrop={pendingFile ? handleCropDone : handleCropExistingDone}
+          onClose={handleCropCancel}
+        />
+      )}
     </div>
   );
 }

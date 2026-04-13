@@ -44,22 +44,24 @@ export default function AdminSidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-        {menuItems.map((item) => {
-          const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
-          return (
-            <Link key={item.href} href={item.href}
-              className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition',
-                active
-                  ? 'bg-primary-700 text-white'
-                  : 'hover:bg-gray-800 text-gray-400 hover:text-white',
-              )}>
-              {item.icon}
-              {item.label}
-              {active && <ChevronRight size={14} className="ml-auto opacity-60" />}
-            </Link>
-          );
-        })}
+        <div className='flex flex-col gap-1 sticky top-0 left-0'>
+          {menuItems.map((item) => {
+            const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+            return (
+              <Link key={item.href} href={item.href}
+                className={clsx(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition',
+                  active
+                    ? 'bg-primary-700 text-white'
+                    : 'hover:bg-gray-800 text-gray-400 hover:text-white',
+                )}>
+                {item.icon}
+                {item.label}
+                {active && <ChevronRight size={14} className="ml-auto opacity-60" />}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {/* User & Logout */}

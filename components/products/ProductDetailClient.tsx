@@ -16,11 +16,14 @@ import {
   Send,
   X,
   Plus,
-  ThumbsUp
+  ThumbsUp,
+  RotateCw,
+  Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductImage360 from './components/product-image-360';
-import { ProductLikesService, ProductReviewsService } from '@/src/api/generated';
+import ProductModelViewer from './components/product-model-viewer';
+import { ProductLikesService, ProductReviewsService, ProductModel3DService } from '@/src/api/generated';
 
 interface ProductDetailClientProps {
   product: any;
@@ -29,6 +32,7 @@ interface ProductDetailClientProps {
 }
 
 export default function ProductDetailClient({ product, relatedProducts, initialReviews }: ProductDetailClientProps) {
+  console.log('product', product);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(product.likesCount || 0);
   const [reviews, setReviews] = useState<any[]>(initialReviews?.data || []);
@@ -67,6 +71,9 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
   });
   const [activeImg, setActiveImg] = useState(product.thumbnail);
   const [show360, setShow360] = useState(false);
+  const [show3DFullscreen, setShow3DFullscreen] = useState(false);
+  const [model3D, setModel3D] = useState<any>(null);
+  const [loadingModel, setLoadingModel] = useState(false);
   const thumbsRef = React.useRef<HTMLDivElement>(null);
 
   const scrollThumbs = (direction: 'left' | 'right') => {
@@ -82,6 +89,21 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
 
   useEffect(() => {
     if (product.likesCount !== undefined) setLikesCount(product.likesCount);
+
+    // Fetch 3D model data
+    setLoadingModel(true);
+    ProductModel3DService.getProductsModel3D(product.id)
+      .then(res => {
+        if (res.data && (res.data.images360 || res.data.modelUrl)) {
+          setModel3D(res.data);
+          return;
+        }
+        // Nếu không có data thì model3D = null, không hiển thị viewer
+      })
+      .catch(() => {
+        // Không set gì - sản phẩm chưa có model 3D
+      })
+      .finally(() => setLoadingModel(false));
   }, [product.id, product.likesCount]);
 
   const formatPrice = (price: number | null) => {
@@ -176,11 +198,11 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
         images: reviewImages
       });
 
-        if (res.success) {
+      if (res.success) {
         setReviewSuccess(true);
         // Add new review to local state
         const newReview = res.data;
-        
+
         // Recalculate average rating
         const newCount = reviewsCount + 1;
         const newAvg = (ratingAvg * reviewsCount + newReview.rating) / newCount;
@@ -229,7 +251,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
       });
       const data = await res.json();
       if (data.success) {
-        setReviews((prev: any[]) => prev.map(r => 
+        setReviews((prev: any[]) => prev.map(r =>
           r.id === reviewId ? { ...r, likeCount: data.data.likeCount } : r
         ));
       }
@@ -309,52 +331,55 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
         <div className="bg-white rounded-2xl shadow-sm flex flex-col md:flex-row gap-8 p-5 md:p-8 overflow-hidden border border-gray-100">
 
           <div className="w-full md:w-[480px] shrink-0">
-            <div 
+            <div
               className="relative aspect-square border border-gray-100 rounded-xl overflow-hidden bg-white mb-4 group shadow-inner cursor-zoom-in"
-              onClick={() => setSelectedLightboxImage(activeImg)}
+              onClick={() => {
+                if (show360 && model3D?.modelUrl) {
+                  setShow3DFullscreen(true);
+                } else if (!show360) {
+                  setSelectedLightboxImage(activeImg);
+                }
+              }}
             >
-              {show360 && product.images && product.images.length > 3 ? (
-                <ProductImage360 images360={product.images} />
+              {show360 ? (
+                model3D?.modelUrl ? (
+                  <ProductModelViewer
+                    modelUrl={model3D.modelUrl}
+                    poster={model3D.poster}
+                    textureUrl={model3D.textureUrl}
+                  />
+                ) : model3D?.images360?.length > 5 ? (
+                  <ProductImage360 images360={model3D.images360} />
+                ) : (
+                  <img
+                    src={activeImg}
+                    className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+                    alt={product.name}
+                  />
+                )
               ) : (
-                // <img
-                //   src={activeImg}
-                //   className="w-full h-full object-contain p-4"
-                //   alt={product.name}
-                // />
-                <ProductImage360
-                  images360={[
-                    "/slider/360-product-photography-575px01.jpg",
-                    "/slider/360-product-photography-575px02.jpg",
-                    "/slider/360-product-photography-575px03.jpg",
-                    "/slider/360-product-photography-575px04.jpg",
-                    "/slider/360-product-photography-575px06.jpg",
-                    "/slider/360-product-photography-575px08.jpg",
-                    "/slider/360-product-photography-575px09.jpg",
-                    "/slider/360-product-photography-575px11.jpg",
-                    "/slider/360-product-photography-575px12.jpg",
-                    "/slider/360-product-photography-575px14.jpg",
-                    "/slider/360-product-photography-575px16.jpg",
-                    "/slider/360-product-photography-575px18.jpg",
-                    "/slider/360-product-photography-575px20.jpg",
-                    "/slider/360-product-photography-575px22.jpg",
-                    "/slider/360-product-photography-575px23.jpg",
-                    "/slider/360-product-photography-575px25.jpg",
-                    "/slider/360-product-photography-575px27.jpg",
-                    "/slider/360-product-photography-575px29.jpg",
-                    "/slider/360-product-photography-575px31.jpg",
-                    "/slider/360-product-photography-575px34.jpg",
-                    "/slider/360-product-photography-575px35.jpg",
-                    "/slider/360-product-photography-575px36.jpg",
-                  ]}
+                <img
+                  src={activeImg}
+                  className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+                  alt={product.name}
                 />
               )}
 
-              {product.images && product.images.length > 5 && (
+              {/* Hint phóng to khi đang xem 3D */}
+              {/* {show360 && model3D?.modelUrl && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white/90 px-3 py-1.5 rounded-full text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 flex items-center gap-1.5 pointer-events-none z-10">
+                  <Maximize2 size={11} />
+                  Click để phóng to
+                </div>
+              )} */}
+
+              {/* Nút toggle 3D */}
+              {(model3D?.modelUrl || (product.images && product.images.length > 5)) || (model3D?.images360?.length > 5) && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setShow360(!show360); }}
                   className="absolute bottom-4 right-4 bg-white/90 text-[#2b59ff] p-3 rounded-full shadow-lg backdrop-blur-sm hover:bg-[#2b59ff] hover:text-white transition-all transform hover:scale-110 active:scale-95 z-10"
                 >
-                  <Play size={20} fill="currentColor" />
+                  {show360 ? <X size={20} /> : <RotateCw size={20} className={loadingModel ? 'animate-spin' : ''} />}
                 </button>
               )}
             </div>
@@ -370,10 +395,10 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                     key={i}
                     onMouseEnter={() => { setActiveImg(img); setShow360(false); }}
                     onClick={() => { setActiveImg(img); setShow360(false); }}
-                    className={`relative w-16 h-16 min-w-[64px] aspect-square border-2 rounded-lg cursor-pointer overflow-hidden transition-all duration-300 ${activeImg === img ? 'border-[#2b59ff] shadow-md ring-2 ring-[#2b59ff]/10' : 'border-gray-100 hover:border-[#2b59ff]/30'}`}
+                    className={`relative w-16 h-16 min-w-[64px] aspect-square border-2 rounded-lg cursor-pointer overflow-hidden transition-all duration-300 ${activeImg === img && !show360 ? 'border-[#2b59ff] shadow-md ring-2 ring-[#2b59ff]/10' : 'border-gray-100 hover:border-[#2b59ff]/30'}`}
                   >
                     <img src={img} className="w-full h-full object-cover" alt="" />
-                    {activeImg === img && (
+                    {activeImg === img && !show360 && (
                       <div className="absolute inset-0 bg-[#2b59ff]/5 pointer-events-none" />
                     )}
                   </div>
@@ -511,8 +536,8 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               <table className="w-full text-sm text-left border-collapse">
                 <tbody>
                   {product.additionalInfo.map((info: any, index: number) => (
-                    <tr 
-                      key={info.id} 
+                    <tr
+                      key={info.id}
                       className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} border-b border-gray-100 last:border-0 transition-colors group`}
                     >
                       <th className="py-4 px-6 font-bold text-gray-700 w-1/3 md:w-1/4 bg-gray-50/40 border-r border-gray-100 transition-colors">
@@ -649,8 +674,8 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                     {r.ProductReviewImages && r.ProductReviewImages.length > 0 && (
                       <div className="flex flex-wrap gap-2 pl-[52px]">
                         {r.ProductReviewImages.map((img: any, idx: number) => (
-                          <div 
-                            key={idx} 
+                          <div
+                            key={idx}
                             onClick={() => setSelectedLightboxImage(img.url)}
                             className="w-20 h-20 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-zoom-in hover:scale-105 transition-transform"
                           >
@@ -678,15 +703,15 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                   >
                     <ChevronRight className="rotate-180" size={18} />
                   </button>
-                  
+
                   {Array.from({ length: Math.ceil(reviewsCount / pageSize) }).map((_, i) => {
                     const page = i + 1;
                     const totalPages = Math.ceil(reviewsCount / pageSize);
-                    
+
                     // Show first, last, current, and neighbors
                     if (
-                      page === 1 || 
-                      page === totalPages || 
+                      page === 1 ||
+                      page === totalPages ||
                       (page >= currentPage - 1 && page <= currentPage + 1)
                     ) {
                       return (
@@ -700,10 +725,10 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
                         </button>
                       );
                     }
-                    
+
                     // Show dots
                     if (
-                      (page === 2 && currentPage > 3) || 
+                      (page === 2 && currentPage > 3) ||
                       (page === totalPages - 1 && currentPage < totalPages - 2)
                     ) {
                       return <span key={page} className="text-gray-300 px-1">...</span>;
@@ -944,7 +969,7 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
             >
               <X size={28} />
             </motion.button>
-            
+
             <motion.img
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -955,6 +980,54 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen 3D Viewer Modal */}
+      <AnimatePresence>
+        {show3DFullscreen && model3D?.modelUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShow3DFullscreen(false)}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 md:p-10"
+          >
+            <motion.button
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full backdrop-blur-md z-10"
+              onClick={() => setShow3DFullscreen(false)}
+            >
+              <X size={28} />
+            </motion.button>
+
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="w-full max-w-3xl aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ProductModelViewer
+                modelUrl={model3D.modelUrl}
+                poster={model3D.poster}
+                textureUrl={model3D.textureUrl}
+                autoRotate={false}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.15 }}
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md text-white/80 px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 pointer-events-none"
+            >
+              <RotateCw size={14} />
+              Kéo để xoay • Cuộn để zoom • Nhấn ESC để đóng
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

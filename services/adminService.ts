@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import Cookies from 'js-cookie';
+import { OpenAPI } from '@/src/api/generated/core/OpenAPI';
 
 const TOKEN_KEY = 'vitechs_admin_token';
 
@@ -12,17 +13,22 @@ export const adminLogin = async (email: string, password: string) => {
   const { token, admin } = res.data;
   setToken(token);
   apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  OpenAPI.TOKEN = token;
   return admin;
 };
 
 export const adminLogout = () => {
   removeToken();
   delete apiClient.defaults.headers.common['Authorization'];
+  OpenAPI.TOKEN = undefined;
 };
 
 export const initAuthHeader = () => {
   const token = getToken();
-  if (token) apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  if (token) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    OpenAPI.TOKEN = token;
+  }
 };
 
 // Admin CRUD helpers

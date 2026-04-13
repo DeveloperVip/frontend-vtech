@@ -7,6 +7,35 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ProductReviewsService {
     /**
+     * Lấy danh sách đánh giá
+     * @param rating
+     * @param page
+     * @param limit
+     * @param username
+     * @param email
+     * @returns any Thành công
+     * @throws ApiError
+     */
+    public static getProductReviews(
+        rating?: number,
+        page?: number,
+        limit?: number,
+        username?: string,
+        email?: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/product-reviews',
+            query: {
+                'rating': rating,
+                'page': page,
+                'limit': limit,
+                'username': username,
+                'email': email,
+            },
+        });
+    }
+    /**
      * Lấy danh sách đánh giá của sản phẩm
      * @param productId
      * @param rating

@@ -11,10 +11,13 @@ interface Props {
 }
 
 export default async function SanPhamDetailPage({ params }: Props) {
+  // console.log("🚀 ~ SanPhamDetailPage ~ params:", params)
   const config = siteConfig;
-  
+  // console.log("🚀 ~ SanPhamDetailPage ~ config:", config)
+
   // Fetch product by slug
   const product = await fetchProductBySlug(params.slug);
+  // console.log("🚀 ~ SanPhamDetailPage ~ product:", product)
   if (!product) return notFound();
 
   // Fetch related products and initial reviews
@@ -24,7 +27,7 @@ export default async function SanPhamDetailPage({ params }: Props) {
   try {
     // 1. Try to fetch specifically related products from API
     relatedProducts = await fetchRelatedProducts(product.id).catch(() => []);
-    
+
     // 2. Fallback to products from the same category if no specific relations
     if (relatedProducts.length === 0) {
       const catId = product.categoryId || product.category?.id || product.category_id;
@@ -35,7 +38,7 @@ export default async function SanPhamDetailPage({ params }: Props) {
           .slice(0, 12);
       }
     }
-    
+
     // 3. Last fallback: random products if still empty
     if (relatedProducts.length === 0) {
       const res = await fetchProducts({ limit: 13 });
@@ -52,9 +55,9 @@ export default async function SanPhamDetailPage({ params }: Props) {
 
   return (
     <>
-      <ProductDetailClient 
-        product={product} 
-        relatedProducts={relatedProducts} 
+      <ProductDetailClient
+        product={product}
+        relatedProducts={relatedProducts}
         initialReviews={initialReviews}
       />
       <Footer config={config} />

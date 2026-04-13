@@ -113,7 +113,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
     } catch (err: any) {
       // Ignore cancellation errors
       if (err.name === 'CancelError' || err.message?.includes('aborted')) return;
-      
+
       console.error("Error loading products:", err);
       // Handle the 429 specifically
       if (err.status === 429 || err.message?.includes('429')) {
@@ -264,7 +264,7 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
                     {/* Ảnh Sản Phẩm & Badges */}
                     <div className="relative aspect-square bg-gray-50 overflow-hidden">
                       {p.thumbnail ? (
-                        <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out" />
+                        <img src={p.thumbnail} alt={p.name} className="w-full h-full p-4 object-cover group-hover:scale-110 transition-transform duration-500 ease-out" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">Chưa có ảnh</div>
                       )}
