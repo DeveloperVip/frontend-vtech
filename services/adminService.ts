@@ -5,28 +5,27 @@ import { OpenAPI } from '@/src/api/generated/core/OpenAPI';
 const TOKEN_KEY = 'vitechs_admin_token';
 
 export const getToken = () => Cookies.get(TOKEN_KEY) || null;
-export const setToken = (token: string) => Cookies.set(TOKEN_KEY, token, { expires: 7, sameSite: 'strict' });
-export const removeToken = () => Cookies.remove(TOKEN_KEY);
+export const setToken = (token: string) => Cookies.set(TOKEN_KEY, token, { expires: 7, sameSite: 'strict', path: '/' });
+export const removeToken = () => Cookies.remove(TOKEN_KEY, { path: '/' });
 
 export const adminLogin = async (email: string, password: string) => {
   const res = await apiClient.post('/auth/login', { email, password });
   const { token, admin } = res.data;
   setToken(token);
-  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  // Header is now handled by interceptor
   OpenAPI.TOKEN = token;
   return admin;
 };
 
 export const adminLogout = () => {
   removeToken();
-  delete apiClient.defaults.headers.common['Authorization'];
   OpenAPI.TOKEN = undefined;
 };
 
 export const initAuthHeader = () => {
+  // Logic remains for legacy or OpenAPI generation compatibility if needed
   const token = getToken();
   if (token) {
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     OpenAPI.TOKEN = token;
   }
 };
@@ -40,6 +39,9 @@ export const adminPost = (url: string, data: object) =>
 
 export const adminPut = (url: string, data: object) =>
   apiClient.put(url, data).then((r) => r.data);
+
+export const adminPatch = (url: string, data: object) =>
+  apiClient.patch(url, data).then((r) => r.data);
 
 export const adminDelete = (url: string) =>
   apiClient.delete(url).then((r) => r.data);

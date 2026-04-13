@@ -16,7 +16,7 @@ interface Post {
 }
 
 export default function NewsHero({ post }: { post: Post | null }) {
-  console.log("🚀 ~ NewsHero ~ post:", post)
+  // console.log("🚀 ~ NewsHero ~ post:", post)
   if (!post) return null;
 
   return (

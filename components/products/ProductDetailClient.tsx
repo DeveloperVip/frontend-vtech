@@ -23,7 +23,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductImage360 from './components/product-image-360';
 import ProductModelViewer from './components/product-model-viewer';
-import { ProductLikesService, ProductReviewsService, ProductModel3DService } from '@/src/api/generated';
+import { ProductLikesService, ProductReviewsService, ProductModel3DService, OpenAPI } from '@/src/api/generated';
 
 interface ProductDetailClientProps {
   product: any;
@@ -32,9 +32,9 @@ interface ProductDetailClientProps {
 }
 
 export default function ProductDetailClient({ product, relatedProducts, initialReviews }: ProductDetailClientProps) {
-  console.log('product', product);
+  // console.log('product', product);
   const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(product.likesCount || 0);
+  const [likesCount, setLikesCount] = useState(product.likeCount || 0);
   const [reviews, setReviews] = useState<any[]>(initialReviews?.data || []);
   const [reviewsCount, setReviewsCount] = useState(initialReviews?.pagination?.total || 0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,6 +90,17 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
   useEffect(() => {
     if (product.likesCount !== undefined) setLikesCount(product.likesCount);
 
+    // Kiểm tra xem user hiện tại đã like chưa
+    const userToken = localStorage.getItem('vitechs_user_token');
+    if (userToken) {
+      OpenAPI.TOKEN = userToken;
+      ProductLikesService.getProductsLike(product.id)
+        .then(res => {
+          if (res.success) setIsLiked(!!res.data.isLiked);
+        })
+        .catch(() => { });
+    }
+
     // Fetch 3D model data
     setLoadingModel(true);
     ProductModel3DService.getProductsModel3D(product.id)
@@ -98,11 +109,8 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
           setModel3D(res.data);
           return;
         }
-        // Nếu không có data thì model3D = null, không hiển thị viewer
       })
-      .catch(() => {
-        // Không set gì - sản phẩm chưa có model 3D
-      })
+      .catch(() => { })
       .finally(() => setLoadingModel(false));
   }, [product.id, product.likesCount]);
 
@@ -111,15 +119,28 @@ export default function ProductDetailClient({ product, relatedProducts, initialR
     return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
   };
 
-  const discount = 22;
-  const originalPrice = product.price ? product.price / (1 - discount / 100) : null;
-
   const handleLike = async () => {
+    const userToken = localStorage.getItem('vitechs_user_token');
+    if (!userToken) {
+      const { toast } = await import('react-hot-toast');
+      toast.error('Vui lòng đăng nhập để yêu thích sản phẩm');
+      return;
+    }
+
     try {
+      OpenAPI.TOKEN = userToken;
       const res = await ProductLikesService.postProductsLike(product.id);
-      console.log('Like response:', res);
-      setIsLiked(!!res.data?.isLiked);
-      setLikesCount(res.data?.likesCount ?? 0);
+      if (res.success) {
+        setIsLiked(!!res.data?.liked);
+        setLikesCount(res.data?.newLikeCount ?? 0);
+
+        const { toast } = await import('react-hot-toast');
+        if (res.data?.liked) {
+          toast.success('Đã thêm vào yêu thích');
+        } else {
+          toast.success('Đã bỏ yêu thích');
+        }
+      }
     } catch (err) {
       console.error('Error toggling like:', err);
     }

@@ -21,6 +21,26 @@ const apiClient = axios.create({
   },
 });
 
+// Request interceptor: attach token automatically
+apiClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+        const Cookies = require('js-cookie');
+        // Ưu tiên admin token nếu đang ở trang admin, ngược lại lấy user token
+        const isAdminPath = window.location.pathname.startsWith('/admin');
+        const token = isAdminPath 
+            ? Cookies.get('vitechs_admin_token') 
+            : Cookies.get('vitechs_user_token');
+            
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor: normalise errors
 apiClient.interceptors.response.use(
   (response) => response,

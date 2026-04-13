@@ -39,14 +39,18 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   checkAuth: async () => {
     const token = getToken();
-    if (!token) return;
-    initAuthHeader();
+    if (!token) {
+        set({ admin: null, isLoading: false });
+        return;
+    }
+    
+    set({ isLoading: true });
     try {
       const res = await apiClient.get('/auth/me');
-      set({ admin: res.data.data });
+      set({ admin: res.data.data, isLoading: false });
     } catch {
       adminLogout();
-      set({ admin: null });
+      set({ admin: null, isLoading: false });
     }
   },
 }));
