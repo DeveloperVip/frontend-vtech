@@ -14,10 +14,17 @@ export const metadata = {
 
 export default async function SanPhamPage() {
   const config = siteConfig;
-  const [categoriesData, productsData] = await Promise.all([
-    fetchCategories().catch(() => []),
-    ProductsService.getProducts(1, 12),
-  ]);
+
+  const categoriesPromise = fetchCategories().catch(() => []);
+  const productsPromise = ProductsService.getProducts(1, 12).catch((error) => {
+    console.error('ProductsService.getProducts failed while prerendering /san-pham:', error);
+    return {
+      data: [],
+      pagination: { total: 0, totalPages: 1, page: 1, limit: 12 },
+    };
+  });
+
+  const [categoriesData, productsData] = await Promise.all([categoriesPromise, productsPromise]);
 
   return (
     <>
