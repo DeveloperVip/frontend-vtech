@@ -46,7 +46,7 @@ export default function AboutSection({ config }: { config?: Record<string, strin
       <div className="max-w-[1440px] mx-auto px-2 md:px-4 relative z-10">
 
         {/* Giới thiệu */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -54,17 +54,17 @@ export default function AboutSection({ config }: { config?: Record<string, strin
           className="text-center mb-20"
         >
           <h2 className="text-3xl md:text-5xl font-extrabold text-blue-900 uppercase tracking-wider mb-8">
-            GIỚI THIỆU VỀ VITECHS
+            VITECHS ĐỒNG HÀNH CÙNG ĐÀO TẠO THỰC HÀNH
           </h2>
 
           <p className="text-[#666] max-w-4xl mx-auto text-[15px] leading-[1.8]">
             {config?.about_content ||
-              'VITECHS., JSC được thành lập năm 2009 tại Hà Nội với mong muốn phát triển các sản phẩm giáo cụ trực quan, sản phẩm dạy nghề hỗ trợ các giảng viên và học sinh sinh viên chuyên sâu vào thực hành.'}
+              'Chúng tôi tập trung cung cấp mô hình dạy học trực quan, dịch vụ kỹ thuật và đội ngũ chuyên gia giàu kinh nghiệm, giúp nhà trường và doanh nghiệp triển khai đào tạo nghề theo hướng thực tiễn, hiệu quả.'}
           </p>
         </motion.div>
 
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -91,7 +91,7 @@ export default function AboutSection({ config }: { config?: Record<string, strin
       </div>
 
 
-      <img
+      {/* <img
         src="/car-left.png"
         alt="Car Left"
         className="absolute left-[-5%] bottom-0 w-[500px] object-contain opacity-95 hidden lg:block z-0 pointer-events-none"
@@ -101,7 +101,7 @@ export default function AboutSection({ config }: { config?: Record<string, strin
         src="/car-left.png"
         alt="Car Right"
         className="absolute right-[-5%] bottom-0 w-[500px] object-contain opacity-95 hidden lg:block z-0 pointer-events-none scale-x-[-1]"
-      />
+      /> */}
     </section>
   );
 }

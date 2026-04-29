@@ -207,45 +207,87 @@ export default function UserChatbox() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
-        {/* Zalo */}
-        <a
-          href="https://zalo.me/02466828899"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Chat Zalo"
-          className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform overflow-hidden group"
-        >
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
-            alt="Zalo"
-            className="w-8 h-8 group-hover:scale-110 transition-transform"
-          />
-        </a>
+      <>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+          {/* Zalo */}
+          <a
+            href="https://zalo.me/02466828899"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Chat Zalo"
+            className="chat-wiggle chat-wiggle-zalo w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform overflow-hidden group"
+          >
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
+              alt="Zalo"
+              className="w-8 h-8 group-hover:scale-110 transition-transform"
+            />
+          </a>
 
-        {/* Messenger */}
-        <a
-          href="https://m.me/vitechs"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Chat Facebook"
-          className="w-12 h-12 bg-[#0A7CFF] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
-            <path d="M12 2C6.477 2 2 6.145 2 11.26c0 2.903 1.488 5.483 3.824 7.152v3.313l3.486-1.921c.854.237 1.758.366 2.69.366 5.523 0 10-4.145 10-9.26S17.523 2 12 2zm1.093 12.396-2.83-3.02-5.594 3.02 6.142-6.52 2.912 3.02 5.513-3.02-6.143 6.52z" />
-          </svg>
-        </a>
+          {/* Messenger */}
+          <a
+            href="https://m.me/vitechs"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Chat Facebook"
+            className="chat-wiggle chat-wiggle-messenger w-12 h-12 bg-[#0A7CFF] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path d="M12 2C6.477 2 2 6.145 2 11.26c0 2.903 1.488 5.483 3.824 7.152v3.313l3.486-1.921c.854.237 1.758.366 2.69.366 5.523 0 10-4.145 10-9.26S17.523 2 12 2zm1.093 12.396-2.83-3.02-5.594 3.02 6.142-6.52 2.912 3.02 5.513-3.02-6.143 6.52z" />
+            </svg>
+          </a>
 
-        {/* Live Chat */}
-        <button
-          onClick={() => setIsOpen(true)}
-          title="Hỗ trợ trực tuyến"
-          className="w-14 h-14 mt-1 rounded-full shadow-xl hover:scale-110 transition-transform flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
-        >
-          <MessageCircle size={26} className="text-white" />
-        </button>
-      </div>
+          {/* Live Chat */}
+          <button
+            onClick={() => setIsOpen(true)}
+            title="Hỗ trợ trực tuyến"
+            className="chat-wiggle chat-wiggle-live w-14 h-14 mt-1 rounded-full shadow-xl hover:scale-110 transition-transform flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
+          >
+            <MessageCircle size={26} className="text-white" />
+          </button>
+        </div>
+
+        <style jsx>{`
+          .chat-wiggle {
+            animation: chatWiggle 2.8s ease-in-out infinite;
+            transform-origin: center;
+          }
+
+          .chat-wiggle-zalo {
+            animation-delay: 0s;
+          }
+
+          .chat-wiggle-messenger {
+            animation-delay: 0.25s;
+          }
+
+          .chat-wiggle-live {
+            animation-delay: 0.5s;
+          }
+
+          @keyframes chatWiggle {
+            0%, 82%, 100% {
+              transform: rotate(0deg);
+            }
+            85% {
+              transform: rotate(-8deg);
+            }
+            88% {
+              transform: rotate(8deg);
+            }
+            91% {
+              transform: rotate(-6deg);
+            }
+            94% {
+              transform: rotate(6deg);
+            }
+            97% {
+              transform: rotate(-2deg);
+            }
+          }
+        `}</style>
+      </>
     );
   }
 

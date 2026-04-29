@@ -22,7 +22,7 @@ export default async function SanPhamPage() {
   return (
     <>
       <main>
-        <AnimatedHeader title="Tất Cả Sản Phẩm" subtitle="Thiết bị đào tạo – Giáo cụ trực quan chuyên nghiệp" />
+        <AnimatedHeader title="Tất Cả Sản Phẩm" subtitle="Thiết bị đào tạo – Giáo cụ trực quan chuyên nghiệp" background="hyperspeed" intensity="bold" />
         <div className="max-w-[1440px] mx-auto px-2 md:px-4 py-10">
           <ProductsClient
             initialProducts={productsData.data || []}

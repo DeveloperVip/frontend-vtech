@@ -32,11 +32,11 @@ export default function LoginPage() {
         toast.success('Đăng nhập thành công!');
         setUser(data.user);
         setToken(data.token);
-        
+
         // Cập nhật thông tin cho chat
         localStorage.setItem('chat_user_id', data.user.id.toString());
         localStorage.setItem('chat_user_name', data.user.name);
-        
+
         router.push('/');
       } else {
         toast.error(data.message || 'Đăng nhập thất bại');
@@ -52,12 +52,18 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 bg-[url('/bg-auth.svg')] bg-cover">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
         <div>
-          <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 transition-colors mb-6 group">
-            <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-            Trở về trang chủ
-          </Link>
+          <div className='flex justify-between'>
+            <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 transition-colors mb-6 group">
+              <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
+              Trở về trang chủ
+            </Link>
+
+            <Link href="/admin/login" className="font-bold text-primary-600 hover:text-primary-700 transition-colors text-[14px]">
+              Đăng nhập admin
+            </Link>
+          </div>
           <div className="flex justify-center">
-             <img src="/vitechs.png" alt="Logo" className="h-12 w-auto mb-4" />
+            <img src="/vitechs.png" alt="Logo" className="h-12 w-auto mb-4" />
           </div>
           <h2 className="text-center text-3xl font-extrabold text-gray-900 tracking-tight">
             Thành viên đăng nhập
@@ -66,7 +72,7 @@ export default function LoginPage() {
             Vui lòng nhập thông tin để truy cập tài khoản của bạn
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="relative">
@@ -125,12 +131,12 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center mt-6 space-y-2">
-            <p className="text-sm text-gray-600">
-                Chưa có tài khoản?{' '}
-                <Link href="/register" className="font-bold text-primary-600 hover:text-primary-700 transition-colors">
-                Đăng ký ngay
-                </Link>
-            </p>
+          <p className="text-sm text-gray-600">
+            Chưa có tài khoản?{' '}
+            <Link href="/register" className="font-bold text-primary-600 hover:text-primary-700 transition-colors">
+              Đăng ký ngay
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import AboutServices from '@/components/about/AboutServices';
 import AboutTeam from '@/components/about/AboutTeam';
 import AboutVision from '@/components/about/AboutVision';
 import AboutOrgChart from '@/components/about/AboutOrgChart';
+import AboutProductShowcase from '@/components/about/AboutProductShowcase';
 import PartnersSection from '@/components/home/PartnersSection';
 
 export const revalidate = 60;
@@ -36,17 +37,44 @@ export default async function GioiThieuPage() {
             <AboutStats />
 
             {/* Description Text */}
-            <div className="max-w-4xl mx-auto space-y-8 text-[#666] leading-[1.8] mb-16 text-center text-[15px]">
-              <p>
-                CTCP ĐẦU TƯ THƯƠNG MẠI VÀ DỊCH VỤ CÔNG NGHỆ VIỆT – VITECHS.,JSC – là nhà cung cấp các thiết bị phục vụ thí nghiệm, đào tạo và dạy nghề có uy tín tại Việt Nam. Công ty chúng tôi là một doanh nghiệp chuyên đi sâu vào việc: Sản xuất các sản phẩm cơ khí, điện, điện tử; sản xuất, lắp ráp các mô hình học cụ phục vụ dạy nghề Điện công nghiệp – Tự động hóa, Cơ khí, Ô tô, Điện lạnh.
-              </p>
-              <p>
-                Ngoài ra chúng tôi còn là nhà nhập khẩu mua bán thương mại các linh kiện phụ kiện, phụ tùng, máy móc, dụng cụ, thiết bị, thiết bị thí nghiệm, thiết bị đo kiểm trong ngành cơ khí, điện, điện tử - tự động hóa, ô tô, máy xây dựng, máy cơ khí, máy phát điện.
-              </p>
+            <div className="max-w-5xl mx-auto mb-16 text-[15px] text-[#64748b] leading-[1.85]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/60">
+                  <div className="h-1 w-12 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-4 transition-all duration-300 group-hover:w-20" />
+                  <h3 className="text-[16px] font-bold text-[#0f172a] mb-2">Mô hình dạy học</h3>
+                  <p>
+                    VITECHS., JSC thành lập năm 2009 tại Hà Nội, phát triển giáo cụ trực quan và thiết bị dạy nghề, hỗ trợ giảng dạy thực hành cho các ngành Cơ khí, Điện - Điện tử, Điện công nghiệp, Điện lạnh và Ô tô.
+                  </p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/60">
+                  <div className="h-1 w-12 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-4 transition-all duration-300 group-hover:w-20" />
+                  <h3 className="text-[16px] font-bold text-[#0f172a] mb-2">Dịch vụ</h3>
+                  <p>
+                    Chúng tôi cung cấp đào tạo nghề ngắn hạn theo chuẩn kỹ năng hiện hành, đồng thời triển khai dịch vụ bảo dưỡng, sửa chữa thiết bị, máy công trình và dây chuyền công nghiệp.
+                  </p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/60">
+                  <div className="h-1 w-12 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-4 transition-all duration-300 group-hover:w-20" />
+                  <h3 className="text-[16px] font-bold text-[#0f172a] mb-2">Nhân sự</h3>
+                  <p>
+                    Đội ngũ kỹ sư và giảng viên được đào tạo bài bản, chuyên môn cao, nhiều kinh nghiệm thực tiễn trong sản xuất và đào tạo kỹ thuật.
+                  </p>
+                </div>
+
+                <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-100/60">
+                  <div className="h-1 w-12 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-4 transition-all duration-300 group-hover:w-20" />
+                  <h3 className="text-[16px] font-bold text-[#0f172a] mb-2">Mục tiêu</h3>
+                  <p>
+                    Giữ vững vị thế trong lĩnh vực thiết bị đào tạo - dạy nghề, cung cấp giải pháp chất lượng cao và phát triển đội ngũ nhân lực chuyên sâu để phục vụ khách hàng tốt nhất.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Blue Banner Box */}
-            <div 
+            <div
               className="max-w-4xl mx-auto text-white p-8 rounded-2xl text-center shadow-xl shadow-blue-500/20 mb-12 font-black text-lg leading-relaxed uppercase"
               style={{ background: 'linear-gradient(90deg, rgba(69, 133, 230, 1) 0%, rgba(54, 132, 247, 1) 100%)' }}
             >
@@ -95,13 +123,16 @@ export default async function GioiThieuPage() {
               <div className="w-16 h-1 bg-blue-600 mx-auto mb-8 rounded-full" />
               <p className="text-[#64748b] font-medium text-[15px]">Định hướng phát triển và cam kết của chúng tôi</p>
             </div>
-            
+
             <AboutVision config={config} />
           </div>
         </section>
 
+
         {/* Đối tác (Client Component for Animations) */}
         <PartnersSection />
+        {/* Sản phẩm tiêu biểu theo lĩnh vực (Client Component for Tabs + Slider) */}
+        <AboutProductShowcase />
       </main>
       <Footer config={config} />
     </>

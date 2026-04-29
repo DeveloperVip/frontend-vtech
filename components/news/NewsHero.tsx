@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CalendarDays, Clock, ArrowRight, Tag } from 'lucide-react';
+import BannerEffects from '@/ultilites/BannerEffects';
+import RippleGridBackground from '@/ultilites/RippleGridBackground';
 
 interface Post {
   id: number;
@@ -36,8 +38,11 @@ export default function NewsHero({ post }: { post: Post | null }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
+      <RippleGridBackground intensity="bold" />
+      <BannerEffects variant="image" intensity="medium" />
+
       {/* Content */}
-      <div className="relative h-full max-w-[1440px] mx-auto px-2 md:px-4 flex flex-col justify-end pb-12">
+      <div className="relative z-10 h-full max-w-[1440px] mx-auto px-2 md:px-4 flex flex-col justify-end pb-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -53,7 +58,7 @@ export default function NewsHero({ post }: { post: Post | null }) {
           )}
 
           {/* Title */}
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4 drop-shadow-lg">
+          <h2 className="text-2xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4 drop-shadow-lg !text-white">
             {post.title}
           </h2>
 

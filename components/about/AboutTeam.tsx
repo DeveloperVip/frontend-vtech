@@ -22,7 +22,7 @@ const cardVariants = {
 export default function AboutTeam() {
   return (
     <div className="max-w-[1440px] mx-auto px-2 md:px-4 text-center mb-16">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -34,25 +34,25 @@ export default function AboutTeam() {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20 items-start text-left">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
           className="relative"
         >
-          <motion.div 
+          <motion.div
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="relative aspect-[16/10] bg-white rounded-3xl overflow-hidden shadow-xl border-4 border-white"
           >
             <div className="w-full h-full flex items-center justify-center text-gray-300 italic text-sm bg-gray-100">
               {/* Placeholder for Team Meeting Image */}
-              [Hình ảnh đội ngũ nhân sự]
+              <img src="/project/doi-ngu-nhan-vien.jpg" alt="Team" className="w-full h-full object-cover" />
             </div>
           </motion.div>
         </motion.div>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -78,7 +78,7 @@ export default function AboutTeam() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-left">
         {staffRoles.map((role, idx) => (
-          <motion.div 
+          <motion.div
             key={idx}
             custom={idx}
             initial="hidden"
@@ -87,7 +87,7 @@ export default function AboutTeam() {
             variants={cardVariants}
             className="bg-white p-8 rounded-3xl border border-gray-50 shadow-lg text-left"
           >
-            <motion.div 
+            <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: idx * 0.3 }}
               className={`w-12 h-12 ${role.bg} ${role.text} rounded-xl flex items-center justify-center mb-6 shadow-sm`}

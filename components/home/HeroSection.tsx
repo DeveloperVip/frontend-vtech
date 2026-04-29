@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import BannerEffects from '@/ultilites/BannerEffects';
+import PixelTrailBackground from '@/ultilites/PixelTrailBackground';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,27 +34,30 @@ export default function HeroSection({ config }: { config?: Record<string, string
         background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)'
       }}
     >
-      <div className="relative max-w-[1440px] mx-auto px-2 md:px-4 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
-        <motion.div 
+      <BannerEffects variant="light" intensity="bold" />
+      <PixelTrailBackground pixelSize={30} fadeMs={1760} density={1} />
+
+      <div className="relative z-10 max-w-[1440px] mx-auto px-2 md:px-4 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
+        <motion.div
           className="pr-10"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.span 
+          <motion.span
             variants={itemVariants}
             className="inline-block bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full mb-5 tracking-wide uppercase shadow">
             Thành lập 2009 · Hà Nội
           </motion.span>
-          <motion.h1 
+          <motion.h1
             variants={itemVariants}
             className="text-4xl md:text-5xl font-extrabold leading-tight mb-5">
             {config?.hero_title || 'VITECHS., JSC'}
           </motion.h1>
-          <motion.p 
+          <motion.p
             variants={itemVariants}
             className="text-white/90 text-[15px] leading-relaxed mb-10 max-w-[480px]">
-             {config?.hero_subtitle || 'Chuyên cung cấp thiết bị đào tạo, thiết bị dạy nghề, đáp ứng nhu cầu thực tiễn và chuyên nghiệp.'}
+            {config?.hero_subtitle || 'Chuyên cung cấp thiết bị đào tạo, thiết bị dạy nghề, đáp ứng nhu cầu thực tiễn và chuyên nghiệp.'}
           </motion.p>
           <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -71,11 +76,11 @@ export default function HeroSection({ config }: { config?: Record<string, string
         </motion.div>
 
         {/* ảnh */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="relative aspect-square md:aspect-auto md:h-[500px] w-full max-w-[500px] mx-auto hidden md:block"
+          className="relative aspect-square md:aspect-auto md:h-[400px] w-full max-w-[700px] mx-auto hidden md:block"
         >
           {/* khung viền ảnh */}
           <div className="w-full h-full bg-black rounded-[32px] overflow-hidden shadow-2xl relative">
@@ -86,16 +91,16 @@ export default function HeroSection({ config }: { config?: Record<string, string
                 backgroundSize: '20px 20px'
               }}
             />
-            <img src="/hero-abstract.png" alt="Hero Graphic" className="absolute inset-0 w-full h-full object-cover mix-blend-lighten opacity-50" />
+            <img src={config?.hero_image || ''} alt="Hero Graphic" className="absolute inset-0 w-full h-full object-cover mix-blend-lighten" />
           </div>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
-            animate={{ 
-              opacity: 1, 
+            animate={{
+              opacity: 1,
               y: [0, -10, 0],
               rotate: [0, 1, -1, 0]
             }}
-            transition={{ 
+            transition={{
               opacity: { delay: 0.9, duration: 0.4 },
               y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
               rotate: { repeat: Infinity, duration: 5, ease: "easeInOut" }
@@ -108,14 +113,14 @@ export default function HeroSection({ config }: { config?: Record<string, string
             <p className="text-[#6b7280] text-[10px] font-medium uppercase tracking-wider">Đánh giá cao</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
-            animate={{ 
-              opacity: 1, 
+            animate={{
+              opacity: 1,
               y: [0, 10, 0],
               rotate: [0, -1, 1, 0]
             }}
-            transition={{ 
+            transition={{
               opacity: { delay: 1.1, duration: 0.4 },
               y: { repeat: Infinity, duration: 5, ease: "easeInOut" },
               rotate: { repeat: Infinity, duration: 6, ease: "easeInOut" }

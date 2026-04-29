@@ -5,6 +5,7 @@ import { submitContact } from '@/services/publicService';
 import { CheckCircle2, Send, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ContactsService } from '@/src/api/generated';
+import AnimatedHeader from '@/components/layout/AnimatedHeader';
 
 const infoCards = [
   {
@@ -145,25 +146,15 @@ export default function LienHeClient() {
     <div className="w-full bg-gray-50 min-h-screen">
 
       {/* Header Banner */}
-      <div
-        className="text-white pt-20 pb-16"
-        style={{ background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)' }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-[1440px] mx-auto px-2 md:px-4 text-center"
-        >
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Liên Hệ Với Chúng Tôi</h1>
-          <p className="text-blue-100 text-base max-w-xl mx-auto">
-            Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn
-          </p>
-        </motion.div>
-      </div>
+      <AnimatedHeader
+        title="Liên Hệ Với Chúng Tôi"
+        subtitle="Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn"
+        background="ripple-grid"
+        intensity="soft"
+      />
 
       {/* Info Cards */}
-      <div className="max-w-[1440px] mx-auto px-2 md:px-4 -mt-10 mb-12">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-4 -mt-10 mb-12 z-10 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {infoCards.map((card, i) => (
             <motion.div
@@ -280,7 +271,7 @@ export default function LienHeClient() {
                   whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-90 text-white font-bold text-[14px] px-8 py-3 rounded-xl transition-opacity disabled:opacity-50"
+                  className="navbar-cta-heart w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-90 text-white font-bold text-[14px] px-8 py-3 rounded-xl transition-opacity disabled:opacity-50"
                 >
                   {loading
                     ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

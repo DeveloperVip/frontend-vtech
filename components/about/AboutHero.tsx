@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { Award, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import OrbBackground from '@/ultilites/OrbBackground';
+import RippleGridBackground from '../../ultilites/RippleGridBackground';
 
 interface AboutHeroProps {
   config: any;
@@ -30,12 +32,14 @@ export default function AboutHero({ config }: AboutHeroProps) {
   };
 
   return (
-    <section 
+    <section
       className="relative overflow-hidden pt-20 pb-16 lg:pt-28 lg:pb-24 text-white"
       style={{ background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)' }}
     >
+      <RippleGridBackground intensity='bold' />
+
       <div className="max-w-[1440px] mx-auto px-2 md:px-4 relative z-10 text-white text-center">
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -50,40 +54,40 @@ export default function AboutHero({ config }: AboutHeroProps) {
             <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-none mb-4 tracking-tight drop-shadow-xl uppercase">
               VITECHS., JSC
             </motion.h1>
-            
+
             <motion.h2 variants={itemVariants} className="text-base md:text-lg lg:text-xl font-bold text-blue-50 leading-tight mb-4 tracking-wide uppercase opacity-90">
               CÔNG TY CỔ PHẦN ĐẦU TƯ THƯƠNG MẠI <br className="hidden md:block" /> VÀ DỊCH VỤ CÔNG NGHỆ VIỆT
             </motion.h2>
-            
+
             <motion.p variants={itemVariants} className="text-[11px] font-bold text-blue-100/60 uppercase tracking-[0.2em] mb-8 leading-relaxed max-w-xl">
               VIET TECHNOLOGY SERVICE AND TRADING INVESTMENT JOINT STOCK COMPANY
             </motion.p>
-            
+
             <motion.p variants={itemVariants} className="text-white/90 text-[15px] leading-[1.8] mb-8 max-w-xl font-medium border-l-2 border-white/20 pl-4 italic">
               Nhà cung cấp thiết bị thí nghiệm, đào tạo và dạy nghề uy tín tại Việt Nam, chuyên sản xuất và phân phối các mô hình học cụ phục vụ dạy nghề Điện công nghiệp, Tự động hóa, Cơ khí, Ô tô, Điện lạnh.
             </motion.p>
           </div>
 
           {/* Right Image */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="relative group lg:ml-auto"
           >
             <div className="absolute -inset-4 bg-white/10 rounded-[40px] blur-2xl group-hover:bg-white/20 transition-all duration-500" />
-            <div className="relative aspect-[4/3] w-full lg:w-[500px] rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-4 border-white/20 bg-white/5 backdrop-blur-sm">
+            <div className="relative aspect-[3/2] w-full lg:w-[650px] rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-4 border-white/20 bg-white/5 backdrop-blur-sm">
               {config.about_image ? (
-                <img src={config.about_image} alt="Về Vitechs" className="w-full h-full object-cover" />
+                <img src={config.about_image} alt="Về Vitechs" className="w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center animate-pulse bg-white/10 text-white/20">
                   {/* Empty image placeholder */}
                 </div>
               )}
             </div>
-            
+
             {/* Floating Badge (Refined) */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.2, duration: 0.6 }}

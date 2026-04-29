@@ -1,17 +1,32 @@
 'use client';
 import { motion } from 'framer-motion';
+import BannerEffects from '../../ultilites/BannerEffects';
+import OrbBackground from '../../ultilites/OrbBackground';
+import ThreadsBackground from '../../ultilites/ThreadsBackground';
+import RippleGridBackground from '../../ultilites/RippleGridBackground';
+import Hyperspeed from '@/ultilites/Hyperspeed';
 
 interface AnimatedHeaderProps {
   title: string;
   subtitle: string;
+  background?: 'default' | 'orb' | 'threads' | 'ripple-grid' | 'hyperspeed';
+  intensity?: 'soft' | 'medium' | 'bold';
 }
 
-export default function AnimatedHeader({ title, subtitle }: AnimatedHeaderProps) {
+export default function AnimatedHeader({ title, subtitle, background = 'default', intensity = 'medium' }: AnimatedHeaderProps) {
   return (
-    <div 
-      className="text-white pt-20 pb-16"
+    <div
+      className="relative overflow-hidden text-white pt-20 pb-16"
       style={{ background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)' }}
     >
+      {background === 'orb' && <OrbBackground intensity={intensity} />}
+      {background === 'threads' && <ThreadsBackground intensity={intensity} />}
+      {background === 'ripple-grid' && <RippleGridBackground intensity={intensity} />}
+      {background === 'hyperspeed' && <Hyperspeed color='white' />}
+      {background === 'default' && <BannerEffects variant="light" intensity={intensity} />}
+
+      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-transparent to-black/20" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

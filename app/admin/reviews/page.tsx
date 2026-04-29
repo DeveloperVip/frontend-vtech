@@ -32,7 +32,7 @@ export default function AdminReviewsPage() {
       const res = await adminGet(`/product-reviews?page=${page}&limit=10`);
       setReviews(res.data || []);
       setPagination(res.pagination || { total: 0, page: 1, totalPages: 1 });
-    } catch (err) {
+    } catch {
       toast.error('Lỗi lấy danh sách đánh giá');
     } finally {
       setLoading(false);
@@ -49,7 +49,7 @@ export default function AdminReviewsPage() {
       await adminDelete(`/product-reviews/${id}`);
       toast.success('Đã xóa đánh giá');
       fetchReviews(pagination.page);
-    } catch (err) {
+    } catch {
       toast.error('Lỗi khi xóa');
     }
   };
@@ -59,7 +59,7 @@ export default function AdminReviewsPage() {
       const { adminPut } = await import('@/services/adminService');
       const newValue = !review.isActive;
       await adminPut(`/product-reviews/${review.id}`, { isActive: newValue });
-      setReviews(prev => prev.map(r => r.id === review.id ? { ...r, isActive: newValue } : r));
+      setReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, isActive: newValue } : r)));
       toast.success('Đã cập nhật trạng thái');
     } catch {
       toast.error('Cập nhật thất bại');
@@ -67,73 +67,141 @@ export default function AdminReviewsPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Quản lý Đánh giá</h1>
+    <div className="space-y-4">
+      <h1 className="mb-2 text-2xl font-bold text-gray-800">Quản lý Đánh giá</h1>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Khách hàng</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Sản phẩm</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Đánh giá</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Nội dung</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Trạng thái</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr><td colSpan={5} className="px-6 py-10 text-center text-gray-400 font-medium">Đang tải...</td></tr>
-            ) : reviews.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-10 text-center text-gray-400 font-medium">Chưa có đánh giá nào</td></tr>
-            ) : reviews.map((r) => (
-              <tr key={r.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-semibold text-gray-900">{r.userName}</div>
-                  <div className="text-xs text-gray-500">{r.email}</div>
-                  <div className="text-[10px] text-gray-400 mt-1">{new Date(r.createdAt).toLocaleDateString('vi-VN')}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <Link href={`/san-pham/${r.Product?.slug}`} target="_blank" className="text-sm text-primary-700 hover:underline flex items-center gap-1">
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        {loading ? (
+          <div className="px-6 py-12 text-center font-medium text-gray-400">Đang tải...</div>
+        ) : reviews.length === 0 ? (
+          <div className="px-6 py-12 text-center font-medium text-gray-400">Chưa có đánh giá nào</div>
+        ) : (
+          <>
+            <div className="space-y-3 p-3 md:hidden">
+              {reviews.map((r) => (
+                <div key={r.id} className="rounded-xl border border-gray-100 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-gray-900">{r.userName}</p>
+                      <p className="truncate text-xs text-gray-500">{r.email}</p>
+                    </div>
+                    <span
+                      id={`admin-review-status-mobile-${r.id}`}
+                      onClick={() => handleToggle(r)}
+                      className={`inline-block cursor-pointer select-none rounded-full px-2 py-0.5 text-xs font-medium ${
+                        r.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {r.isActive ? 'Hiển thị' : 'Ẩn'}
+                    </span>
+                  </div>
+
+                  <Link
+                    href={`/san-pham/${r.Product?.slug}`}
+                    target="_blank"
+                    className="mt-2 inline-flex max-w-full items-center gap-1 truncate text-xs text-primary-700 hover:underline"
+                  >
                     {r.Product?.name} <ExternalLink size={12} />
                   </Link>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-0.5 text-yellow-500">
+
+                  <div className="mt-2 flex items-center gap-0.5 text-yellow-500">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} size={14} className={i < r.rating ? 'fill-current' : 'text-gray-200'} />
                     ))}
                   </div>
-                </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-gray-600 line-clamp-2 max-w-xs">{r.content}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <span 
-                    onClick={() => handleToggle(r)}
-                    className={`inline-block w-28 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer select-none transition-all hover:opacity-80 text-center ${r.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 opacity-60'}`}>
-                    {r.isActive ? 'Hiển thị' : 'Không hiển thị'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button onClick={() => handleDelete(r.id)} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-                    <Trash2 size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+                  <p className="mt-2 line-clamp-3 text-sm text-gray-600">{r.content}</p>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString('vi-VN')}</span>
+                    <button
+                      id={`admin-review-delete-mobile-${r.id}`}
+                      onClick={() => handleDelete(r.id)}
+                      className="rounded-lg p-1.5 text-primary-600 transition-colors hover:bg-primary-50"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-4 text-xs font-bold uppercase text-gray-500">Khách hàng</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase text-gray-500">Sản phẩm</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase text-gray-500">Đánh giá</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase text-gray-500">Nội dung</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase text-gray-500">Trạng thái</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold uppercase text-gray-500">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {reviews.map((r) => (
+                    <tr key={r.id} className="transition-colors hover:bg-gray-50/50">
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-gray-900">{r.userName}</div>
+                        <div className="text-xs text-gray-500">{r.email}</div>
+                        <div className="mt-1 text-[10px] text-gray-400">{new Date(r.createdAt).toLocaleDateString('vi-VN')}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/san-pham/${r.Product?.slug}`}
+                          target="_blank"
+                          className="flex items-center gap-1 text-sm text-primary-700 hover:underline"
+                        >
+                          {r.Product?.name} <ExternalLink size={12} />
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-0.5 text-yellow-500">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={14} className={i < r.rating ? 'fill-current' : 'text-gray-200'} />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="line-clamp-2 max-w-xs text-sm text-gray-600">{r.content}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          id={`admin-review-status-${r.id}`}
+                          onClick={() => handleToggle(r)}
+                          className={`inline-block w-24 cursor-pointer select-none rounded-full px-2 py-0.5 text-center text-xs font-medium transition-all hover:opacity-80 ${
+                            r.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 opacity-60'
+                          }`}
+                        >
+                          {r.isActive ? 'Hiển thị' : 'Ẩn'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          id={`admin-review-delete-${r.id}`}
+                          onClick={() => handleDelete(r.id)}
+                          className="rounded-lg p-2 text-primary-600 transition-colors hover:bg-primary-50"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           {[...Array(pagination.totalPages)].map((_, i) => (
             <button
               key={i}
+              id={`admin-review-page-${i + 1}`}
               onClick={() => fetchReviews(i + 1)}
-              className={`w-10 h-10 rounded-lg text-sm font-medium transition ${
+              className={`h-10 w-10 rounded-lg text-sm font-medium transition ${
                 pagination.page === i + 1 ? 'bg-primary-700 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}
             >

@@ -5,33 +5,33 @@ import { motion } from 'framer-motion';
 export default function AboutServices() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative"
       >
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.05, 1],
             opacity: [0.3, 0.5, 0.3]
           }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -inset-4 bg-blue-100/30 rounded-[32px] blur-2xl" 
+          className="absolute -inset-4 bg-blue-100/30 rounded-[32px] blur-2xl"
         />
-        <motion.div 
+        <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           className="relative aspect-[16/10] bg-gray-100 rounded-[24px] overflow-hidden shadow-xl border-4 border-white"
         >
           <div className="w-full h-full flex items-center justify-center text-gray-300 italic text-sm">
             {/* Placeholder for Wood Workshop Image */}
-            [Hình ảnh xưởng mộc/thiết bị]
+            <img src="/project/anh-xuong-2.jpg" alt="Services" className="w-full h-full object-cover" />
           </div>
         </motion.div>
       </motion.div>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true, margin: "-100px" }}

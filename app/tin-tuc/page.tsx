@@ -20,7 +20,7 @@ export default async function TinTucPage() {
     PostsService.getPosts().catch(() => null),
     PostsService.getPosts().catch(() => ({ data: [] })),
   ]);
-  console.log("🚀 ~ TinTucPage ~ postsData:", featuredPost?.data?.[0])
+  // console.log("🚀 ~ TinTucPage ~ postsData:", featuredPost?.data?.[0])
 
   const posts = postsData.data || [];
   const sidebarPosts = (sidebarData.data || []).slice(0, 5);
