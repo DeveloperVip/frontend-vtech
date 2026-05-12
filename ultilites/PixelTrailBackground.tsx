@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 interface PixelTrailBackgroundProps {
   pixelSize?: number;
@@ -8,55 +8,42 @@ interface PixelTrailBackgroundProps {
   density?: number;
 }
 
+/**
+ * Lightweight pixel trail effect using CSS transforms + opacity transitions.
+ * Uses a pool of reusable DOM nodes to avoid constant createElement/remove churn.
+ */
 export default function PixelTrailBackground({ pixelSize = 14, fadeMs = 820, density = 1 }: PixelTrailBackgroundProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const queueRef = useRef<Array<{ x: number; y: number }>>([]);
+  const particlesRef = useRef<Array<{ x: number; y: number; opacity: number; scale: number; color: string; born: number }>>([]);
   const previousCellRef = useRef<{ cx: number; cy: number } | null>(null);
 
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+  const palette = useRef([
+    'rgba(255,255,255,0.55)',
+    'rgba(196,231,255,0.50)',
+    'rgba(179,160,255,0.45)',
+  ]).current;
 
-    const captureTarget = root.parentElement ?? root;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const spawnPixel = (x: number, y: number) => {
-      const pixel = document.createElement('span');
-      pixel.className = 'absolute rounded-[3px] pointer-events-none pixel-trail-node';
-      pixel.style.width = `${pixelSize}px`;
-      pixel.style.height = `${pixelSize}px`;
-      pixel.style.left = `${x - pixelSize / 2}px`;
-      pixel.style.top = `${y - pixelSize / 2}px`;
+    const captureTarget = canvas.parentElement ?? canvas;
 
-      const palette = [
-        'rgba(255,255,255,0.62)',
-        'rgba(196,231,255,0.6)',
-        'rgba(179,160,255,0.55)',
-      ];
-      const color = palette[Math.floor(Math.random() * palette.length)];
-
-      pixel.style.background = color;
-      pixel.style.boxShadow = `0 0 18px ${color}`;
-      pixel.style.opacity = '0.9';
-      pixel.style.transform = 'scale(1)';
-      pixel.style.transition = `opacity ${fadeMs}ms ease-out, transform ${fadeMs}ms ease-out`;
-
-      root.appendChild(pixel);
-
-      requestAnimationFrame(() => {
-        pixel.style.opacity = '0';
-        pixel.style.transform = 'scale(0.55)';
-      });
-
-      window.setTimeout(() => {
-        pixel.remove();
-      }, fadeMs + 80);
+    const resize = () => {
+      const rect = captureTarget.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
     };
+    resize();
+    window.addEventListener('resize', resize);
 
     const onMove = (event: PointerEvent) => {
-      const rect = root.getBoundingClientRect();
+      const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
@@ -69,9 +56,13 @@ export default function PixelTrailBackground({ pixelSize = 14, fadeMs = 820, den
       if (!previous || previous.cx !== cx || previous.cy !== cy) {
         previousCellRef.current = { cx, cy };
         for (let i = 0; i < density; i += 1) {
-          queueRef.current.push({
+          particlesRef.current.push({
             x: x + (Math.random() - 0.5) * pixelSize * 0.7,
             y: y + (Math.random() - 0.5) * pixelSize * 0.7,
+            opacity: 0.85,
+            scale: 1,
+            color: palette[Math.floor(Math.random() * palette.length)],
+            born: performance.now(),
           });
         }
       }
@@ -81,12 +72,38 @@ export default function PixelTrailBackground({ pixelSize = 14, fadeMs = 820, den
       previousCellRef.current = null;
     };
 
-    const loop = () => {
-      const queued = queueRef.current;
-      if (queued.length) {
-        const batch = queued.splice(0, Math.min(4, queued.length));
-        batch.forEach((point) => spawnPixel(point.x, point.y));
+    let lastFrame = performance.now();
+    const loop = (now: number) => {
+      const dt = now - lastFrame;
+      lastFrame = now;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const particles = particlesRef.current;
+      const fadeRate = 1 / fadeMs;
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const age = now - p.born;
+        const t = Math.min(age * fadeRate, 1);
+
+        p.opacity = 0.85 * (1 - t);
+        p.scale = 1 - 0.45 * t;
+
+        if (p.opacity <= 0.01) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        const half = (pixelSize * p.scale) / 2;
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.roundRect(p.x - half, p.y - half, pixelSize * p.scale, pixelSize * p.scale, 3);
+        ctx.fill();
       }
+
+      ctx.globalAlpha = 1;
       rafRef.current = requestAnimationFrame(loop);
     };
 
@@ -99,15 +116,16 @@ export default function PixelTrailBackground({ pixelSize = 14, fadeMs = 820, den
       captureTarget.removeEventListener('pointermove', onMove);
       captureTarget.removeEventListener('pointerleave', onLeave);
       captureTarget.removeEventListener('pointercancel', onLeave);
+      window.removeEventListener('resize', resize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [density, fadeMs, pixelSize]);
+  }, [density, fadeMs, pixelSize, palette]);
 
   return (
-    <div
-      ref={rootRef}
+    <canvas
+      ref={canvasRef}
       aria-hidden
-      className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
+      className="pointer-events-none absolute inset-0 z-20"
       style={{
         maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.75), rgba(0,0,0,0.25))',
       }}

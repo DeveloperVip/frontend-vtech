@@ -1,13 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { submitContact } from '@/services/publicService';
 import { CheckCircle2 } from 'lucide-react';
-import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
-
-const SCROLL_SPEED = 100;
-const DRAG_ELASTIC = 0.02;
-const DRAG_MOMENTUM = false;
 
 const partnerLogos = [
   { name: 'Kistler-Đức', src: '/logo/Kistler-Đức.svg' },
@@ -41,38 +36,7 @@ export default function ContactSection() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const x = useMotionValue(0);
-  const [loopWidth, setLoopWidth] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const normalizeX = (value: number, width: number) => {
-    if (!width) return value;
-    let next = value % width;
-    if (next > 0) next -= width;
-    return next;
-  };
-
-  useEffect(() => {
-    const updateWidth = () => {
-      const totalWidth = trackRef.current?.scrollWidth || 0;
-      const nextLoopWidth = totalWidth / 2;
-      setLoopWidth(nextLoopWidth);
-      x.set(normalizeX(x.get(), nextLoopWidth));
-    };
-
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, [x]);
-
-  useAnimationFrame((_, delta) => {
-    if (!loopWidth || isHovering || isDragging) return;
-
-    const next = x.get() - (SCROLL_SPEED * delta) / 1000;
-    x.set(next <= -loopWidth ? next + loopWidth : next);
-  });
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -239,26 +203,23 @@ export default function ContactSection() {
         <div
           className="overflow-hidden w-full relative mb-20"
           onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => {
-            setIsHovering(false);
-            setIsDragging(false);
-          }}
+          onMouseLeave={() => setIsHovering(false)}
         >
           <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
           <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
 
-          <motion.div
-            ref={trackRef}
-            className="flex gap-28 items-center w-max cursor-grab active:cursor-grabbing"
-            style={{ x }}
-            drag="x"
-            dragConstraints={{ left: -loopWidth, right: 0 }}
-            dragElastic={DRAG_ELASTIC}
-            dragMomentum={DRAG_MOMENTUM}
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={() => {
-              setIsDragging(false);
-              x.set(normalizeX(x.get(), loopWidth));
+          <style jsx>{`
+            @keyframes scroll-loop {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+          `}</style>
+
+          <div
+            className="flex gap-28 items-center w-max"
+            style={{
+              animation: 'scroll-loop 60s linear infinite',
+              animationPlayState: isHovering ? 'paused' : 'running',
             }}
           >
             {[...partnerLogos, ...partnerLogos].map((logo, index) => (
@@ -270,25 +231,18 @@ export default function ContactSection() {
                   src={logo.src}
                   alt={logo.name}
                   className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
+                  loading="lazy"
                 />
 
                 {/* Tooltip */}
                 <div
-                  className={`
-                         pointer-events-none
-                         absolute left-1/2 -translate-x-1/2 bottom-full mb-2
-                         whitespace-nowrap
-                         rounded-md bg-black/90 px-2.5 py-1 text-[11px] font-medium text-white
-                         transition-all duration-200 ease-out
-                         ${!isDragging ? "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0" : "opacity-0"}
-                         z-20
-                       `}
+                  className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded-md bg-black/90 px-2.5 py-1 text-[11px] font-medium text-white transition-all duration-200 ease-out opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 z-20"
                 >
                   {logo.name}
                 </div>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
     </section>

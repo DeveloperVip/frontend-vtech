@@ -15,6 +15,7 @@ interface AuthStore {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  setAdmin: (admin: AdminUser) => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -35,6 +36,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   logout: () => {
     adminLogout();
     set({ admin: null });
+  },
+
+  setAdmin: (admin) => {
+    set({ admin });
   },
 
   checkAuth: async () => {

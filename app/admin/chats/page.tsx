@@ -13,10 +13,17 @@ import {
   Clock,
   X,
   ArrowLeft,
+  Paperclip,
+  FileText,
+  Loader2,
+  Filter,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import socketService from '@/services/socketService';
 import { adminGet } from '@/services/adminService';
 import toast from 'react-hot-toast';
+import { formatFileSize, parseChatMessage, uploadChatAttachment, type ChatAttachment } from '@/lib/chatMessage';
 
 interface Message {
   id?: number;
@@ -44,16 +51,22 @@ export default function AdminChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'waiting' | 'active' | 'closed'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'guest' | 'member'>('all');
   const [messageSearchTerm, setMessageSearchTerm] = useState('');
   const [isSearchingMessages, setIsSearchingMessages] = useState(false);
   const [showRoomListMobile, setShowRoomListMobile] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   const [adminInfo] = useState({
     id: 1,
     name: 'Admin Support',
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     socketService.connect();
@@ -86,7 +99,7 @@ export default function AdminChatPage() {
 
   useEffect(() => {
     loadRooms();
-  }, [searchTerm, typeFilter]);
+  }, [searchTerm, typeFilter, statusFilter]);
 
   useEffect(() => {
     if (selectedRoom) {
@@ -113,8 +126,12 @@ export default function AdminChatPage() {
   const loadRooms = async () => {
     try {
       const params = new URLSearchParams();
-      params.append('status', 'waiting');
-      params.append('status', 'active');
+      if (statusFilter === 'all') {
+        params.append('status', 'waiting');
+        params.append('status', 'active');
+      } else {
+        params.append('status', statusFilter);
+      }
       if (searchTerm) params.append('q', searchTerm);
       if (typeFilter !== 'all') params.append('type', typeFilter);
 
@@ -139,6 +156,8 @@ export default function AdminChatPage() {
   const handlePickRoom = async (room: Room) => {
     setSelectedRoom(room);
     setMessageSearchTerm('');
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
 
     socketService.emit('admin:pick-room', {
       roomId: room.id,
@@ -173,20 +192,70 @@ export default function AdminChatPage() {
     }
   };
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim() || !selectedRoom) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    socketService.emit('message:send', {
-      roomId: selectedRoom.id,
-      message: inputMessage.trim(),
-      senderType: 'admin',
-      senderId: String(adminInfo.id),
-      senderName: adminInfo.name,
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File tối đa 10MB');
+      e.target.value = '';
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageItem = items.find((item) => item.kind === 'file' && item.type.startsWith('image/'));
+    const pastedFile = imageItem?.getAsFile();
+
+    if (!pastedFile) return;
+
+    e.preventDefault();
+
+    if (pastedFile.size > 10 * 1024 * 1024) {
+      toast.error('Ảnh tối đa 10MB');
+      return;
+    }
+
+    const ext = pastedFile.type.split('/')[1] || 'png';
+    const file = new File([pastedFile], `anh-dan-tu-clipboard-${Date.now()}.${ext}`, {
+      type: pastedFile.type || 'image/png',
     });
 
-    setInputMessage('');
-    if (isSearchingMessages) {
-      setMessageSearchTerm('');
+    setSelectedFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast.success('Đã dán ảnh vào tin nhắn');
+  };
+
+  const handleSendMessage = async () => {
+    if ((!inputMessage.trim() && !selectedFile) || !selectedRoom || uploadingAttachment || isSearchingMessages) return;
+
+    try {
+      let attachment: ChatAttachment | undefined;
+
+      if (selectedFile) {
+        setUploadingAttachment(true);
+        attachment = await uploadChatAttachment(selectedFile);
+      }
+
+      socketService.emit('message:send', {
+        roomId: selectedRoom.id,
+        message: inputMessage.trim(),
+        attachment,
+        senderType: 'admin',
+        senderId: String(adminInfo.id),
+        senderName: adminInfo.name,
+      });
+
+      setInputMessage('');
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể gửi file');
+    } finally {
+      setUploadingAttachment(false);
     }
   };
 
@@ -199,6 +268,8 @@ export default function AdminChatPage() {
 
     setSelectedRoom(null);
     setMessages([]);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     loadRooms();
     setShowRoomListMobile(true);
     toast.success('Đã đóng cuộc hội thoại');
@@ -223,41 +294,120 @@ export default function AdminChatPage() {
     return map[priority as keyof typeof map] || map.normal;
   };
 
-  return (
-    <div className="flex h-[calc(100vh-120px)] flex-col gap-3 lg:flex-row lg:gap-4">
-      <div
-        className={`${selectedRoom && !showRoomListMobile ? 'hidden' : 'flex'} w-full flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm lg:flex lg:w-80`}
+  const renderAttachment = (attachment: ChatAttachment, isOwnMessage: boolean) => {
+    if (attachment.kind === 'image') {
+      return (
+        <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="mt-2 block overflow-hidden rounded-xl">
+          <img src={attachment.url} alt={attachment.name} className="max-h-64 w-full object-cover" />
+        </a>
+      );
+    }
+
+    return (
+      <a
+        href={attachment.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`mt-2 flex items-center gap-2 rounded-xl border p-2 transition ${isOwnMessage
+          ? 'border-white/20 bg-white/10 text-white hover:bg-white/15'
+          : 'border-gray-100 bg-gray-50 text-gray-700 hover:bg-gray-100'
+          }`}
       >
-        <div className="mb-4 flex shrink-0 items-center justify-between">
+        <FileText size={18} className="shrink-0" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-xs font-bold">{attachment.name}</span>
+          <span className={`text-[10px] ${isOwnMessage ? 'text-white/70' : 'text-gray-400'}`}>{formatFileSize(attachment.size)}</span>
+        </span>
+      </a>
+    );
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-5.5rem)] min-h-[560px] min-w-0 flex-col gap-3 overflow-hidden md:h-[calc(100vh-3rem)] lg:flex-row lg:gap-4">
+      <div
+        className={`${selectedRoom && !showRoomListMobile ? 'hidden' : 'flex'} h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] lg:flex lg:w-[380px] lg:shrink-0`}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-white to-slate-50 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Users size={20} className="text-primary-700" />
-            <h2 className="text-sm font-bold tracking-tight text-gray-900">Hỗ trợ khách hàng</h2>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
+              <Users size={20} />
+            </div>
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Trung tâm hỗ trợ</p>
+              <h2 className="text-base font-black tracking-tight text-slate-950">Hội thoại</h2>
+            </div>
           </div>
-          <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-bold text-primary-700">
+          <span className="rounded-full bg-primary-600 px-3 py-1 text-[11px] font-black text-white shadow-sm shadow-primary-200">
             {rooms.length} Hội thoại
           </span>
         </div>
 
-        <div className="mb-4 shrink-0 space-y-3">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              id="admin-chat-search-room"
-              type="text"
-              placeholder="Tìm tên, email..."
-              className="w-full rounded-xl border border-gray-100 bg-gray-50 py-2 pl-9 pr-4 text-xs outline-none transition-all focus:bg-white focus:ring-2 focus:ring-primary-100"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="shrink-0 space-y-3 border-b border-slate-100 px-4 py-4">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                id="admin-chat-search-room"
+                type="text"
+                placeholder="Tìm tên, email..."
+                className="w-full rounded-2xl border border-slate-100 bg-slate-50 py-3 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-primary-200 focus:bg-white focus:ring-4 focus:ring-primary-50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="relative" ref={statusDropdownRef}>
+              <button
+                id="admin-chat-status-filter-btn"
+                onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-xs font-bold transition-all ${
+                  statusFilter !== 'all'
+                    ? 'border-primary-200 bg-primary-50 text-primary-700'
+                    : 'border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200 hover:bg-white'
+                }`}
+              >
+                <Filter size={14} />
+                <span className="hidden sm:inline">
+                  {statusFilter === 'all' ? 'Trạng thái' : statusFilter === 'waiting' ? 'Chờ' : statusFilter === 'active' ? 'Hỗ trợ' : 'Đã đóng'}
+                </span>
+                <ChevronDown size={14} className={`transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              {showStatusDropdown && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50">
+                  {[
+                    { value: 'all', label: 'Tất cả trạng thái', color: 'text-slate-600' },
+                    { value: 'waiting', label: 'Đang chờ', color: 'text-yellow-600', dot: 'bg-yellow-400' },
+                    { value: 'active', label: 'Đang hỗ trợ', color: 'text-green-600', dot: 'bg-green-400' },
+                    { value: 'closed', label: 'Đã đóng', color: 'text-gray-500', dot: 'bg-gray-400' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      id={`admin-chat-status-${opt.value}`}
+                      onClick={() => {
+                        setStatusFilter(opt.value as typeof statusFilter);
+                        setShowStatusDropdown(false);
+                      }}
+                      className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold transition-all hover:bg-slate-50 ${
+                        statusFilter === opt.value ? 'bg-primary-50/50' : ''
+                      }`}
+                    >
+                      {opt.dot && <span className={`h-2 w-2 rounded-full ${opt.dot}`} />}
+                      {!opt.dot && <span className="h-2 w-2" />}
+                      <span className={`flex-1 ${opt.color}`}>{opt.label}</span>
+                      {statusFilter === opt.value && <Check size={14} className="text-primary-600" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex rounded-lg border border-gray-100 bg-gray-50 p-1">
+          <div className="flex rounded-2xl border border-slate-100 bg-slate-50 p-1">
             {(['all', 'guest', 'member'] as const).map((f) => (
               <button
                 id={`admin-chat-filter-${f}`}
                 key={f}
                 onClick={() => setTypeFilter(f)}
-                className={`flex-1 rounded-md py-1.5 text-[10px] font-bold transition-all ${typeFilter === f ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                className={`flex-1 rounded-xl py-2 text-[11px] font-black uppercase tracking-wide transition-all ${typeFilter === f ? 'bg-white text-primary-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'
                   }`}
               >
                 {f === 'all' ? 'Tất cả' : f === 'guest' ? 'Khách' : 'Thành viên'}
@@ -267,15 +417,15 @@ export default function AdminChatPage() {
         </div>
 
         {rooms.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center py-12 text-center text-sm text-gray-400">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-gray-200 bg-gray-50">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8 py-12 text-center text-sm text-slate-400">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50">
               <MessageCircle size={32} className="opacity-20" />
             </div>
-            <p className="font-medium">Không tìm thấy hội thoại</p>
+            <p className="font-bold text-slate-600">Không tìm thấy hội thoại</p>
             <p className="mt-1 text-[11px]">Vui lòng thử điều chỉnh bộ lọc</p>
           </div>
         ) : (
-          <div className="custom-scrollbar flex-1 space-y-2 overflow-y-auto pr-1">
+          <div className="custom-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-3">
             {rooms
               .sort((a, b) => {
                 const priorityOrder: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -290,40 +440,40 @@ export default function AdminChatPage() {
                     id={`admin-chat-room-${room.id}`}
                     key={room.id}
                     onClick={() => handlePickRoom(room)}
-                    className={`group relative w-full rounded-xl border p-3.5 text-left transition-all active:scale-[0.98] ${isActive
-                        ? 'bg-primary-50 ring-1 ring-primary-600 border-primary-600 shadow-md'
-                        : 'border-gray-50 bg-white hover:border-primary-100 hover:bg-gray-50/50'
+                    className={`group relative w-full rounded-2xl border p-4 text-left transition-all active:scale-[0.985] ${isActive
+                        ? 'border-primary-200 bg-primary-50/90 shadow-[0_16px_36px_rgba(37,99,235,0.14)] ring-1 ring-primary-500'
+                        : 'border-slate-100 bg-white hover:border-primary-100 hover:bg-slate-50'
                       }`}
                   >
                     <div className="mb-2 flex items-start justify-between">
-                      <div className="flex flex-col gap-0.5">
+                      <div className="min-w-0 flex flex-col gap-0.5">
                         <div className="flex items-center gap-2">
-                          <p className={`max-w-[140px] truncate text-sm font-bold ${isActive ? 'text-primary-900' : 'text-gray-900'}`}>
+                          <p className={`max-w-[190px] truncate text-sm font-black tracking-tight ${isActive ? 'text-primary-950' : 'text-slate-950'}`}>
                             {room.userName}
                           </p>
                           <span
-                            className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter ${room.userType === 'member' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+                            className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide ${room.userType === 'member' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'
                               }`}
                           >
                             {room.userType === 'member' ? 'ME' : 'GS'}
                           </span>
                         </div>
-                        <p className="max-w-[160px] truncate text-[10px] italic text-gray-400">#{room.userId.substring(0, 8)}</p>
+                        <p className="max-w-[210px] truncate text-[11px] font-medium text-slate-400">#{room.userId.substring(0, 8)}</p>
                       </div>
                       <span
-                        className={`rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase ${getStatusBadge(room.status)}`}
+                        className={`rounded-full px-2 py-1 text-[9px] font-black uppercase ${getStatusBadge(room.status)}`}
                       >
                         {room.status === 'waiting' ? 'Chờ' : 'Hỗ trợ'}
                       </span>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3 group-hover:border-primary-100">
-                      <div className={`flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase ${pInfo.color}`}>
-                        <span className={`h-1 w-1 rounded-full ${pInfo.dot}`} />
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 group-hover:border-primary-100">
+                      <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase ${pInfo.color}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${pInfo.dot}`} />
                         {pInfo.label}
                       </div>
                       {room.lastMessageAt && (
-                        <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
                           <Clock size={10} />
                           {new Date(room.lastMessageAt).toLocaleTimeString('vi-VN', {
                             hour: '2-digit',
@@ -340,33 +490,35 @@ export default function AdminChatPage() {
       </div>
 
       <div
-        className={`${!selectedRoom && showRoomListMobile ? 'hidden lg:flex' : 'flex'} min-h-[360px] flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm`}
+        className={`${!selectedRoom && showRoomListMobile ? 'hidden lg:flex' : 'flex'} h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]`}
       >
         {!selectedRoom ? (
-          <div className="flex flex-1 items-center justify-center bg-gray-50/30 text-gray-400">
-            <div className="animate-pulse text-center">
-              <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-gray-50 bg-white shadow-sm">
-                <MessageCircle size={48} className="text-primary-100" />
+          <div className="flex min-h-0 flex-1 items-center justify-center bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.08),transparent_36%),linear-gradient(180deg,#ffffff,#f8fafc)] px-6 text-slate-400">
+            <div className="text-center">
+              <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-[32px] border border-primary-100 bg-white shadow-[0_24px_60px_rgba(37,99,235,0.12)]">
+                <MessageCircle size={48} className="text-primary-300" />
               </div>
-              <h3 className="mb-2 text-xl font-extrabold tracking-tight text-gray-900">Hệ thống Support VITECHS</h3>
-              <p className="max-w-[280px] text-sm">Chọn một cuộc trò chuyện từ danh sách để bắt đầu hỗ trợ khách hàng</p>
+              <h3 className="mb-2 text-2xl font-black tracking-tight text-slate-950">Hệ thống Support VITECHS</h3>
+              <p className="mx-auto max-w-[320px] text-sm font-medium leading-6 text-slate-500">
+                Chọn một cuộc trò chuyện từ danh sách bên trái để bắt đầu hỗ trợ khách hàng.
+              </p>
             </div>
           </div>
         ) : (
           <>
-            <div className="sticky top-0 z-10 border-b bg-white px-3 py-3 sm:px-4 lg:px-6">
+            <div className="shrink-0 border-b border-slate-100 bg-white px-3 py-3 sm:px-4 lg:px-6">
               <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
                 <button
                   id="admin-chat-back-rooms"
                   onClick={() => setShowRoomListMobile(true)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-700"
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700"
                 >
                   <ArrowLeft size={14} /> Hội thoại
                 </button>
                 <button
                   id="admin-chat-close-mobile"
                   onClick={handleCloseRoom}
-                  className="rounded-lg bg-red-50 p-2 text-red-600"
+                  className="rounded-xl bg-red-50 p-2.5 text-red-600"
                   title="Kết thúc tư vấn"
                 >
                   <Trash2 size={16} />
@@ -376,27 +528,27 @@ export default function AdminChatPage() {
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-base font-black text-white shadow-lg ${selectedRoom.userType === 'member' ? 'from-indigo-500 to-primary-700' : 'from-gray-400 to-gray-600'
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-base font-black text-white shadow-lg ${selectedRoom.userType === 'member' ? 'from-indigo-500 to-primary-700' : 'from-slate-500 to-slate-700'
                       }`}
                   >
                     {selectedRoom.userName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="truncate text-base font-black tracking-tight text-gray-900 sm:text-lg">{selectedRoom.userName}</h3>
+                      <h3 className="truncate text-lg font-black tracking-tight text-slate-950 sm:text-xl">{selectedRoom.userName}</h3>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${selectedRoom.userType === 'member'
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${selectedRoom.userType === 'member'
                             ? 'border border-indigo-100 bg-indigo-50 text-indigo-600'
-                            : 'bg-gray-100 text-gray-600'
+                            : 'bg-slate-100 text-slate-600'
                           }`}
                       >
                         {selectedRoom.userType === 'member' ? 'Thành viên' : 'Khách'}
                       </span>
                     </div>
-                    <p className="truncate text-xs font-medium text-primary-600">
+                    <p className="truncate text-sm font-semibold text-primary-600">
                       {selectedRoom.userEmail || `Mã định danh: ${selectedRoom.userId}`}
                     </p>
-                    <div className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400">
+                    <div className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-slate-400">
                       <History size={11} />
                       {selectedRoom.lastMessageAt ? new Date(selectedRoom.lastMessageAt).toLocaleTimeString('vi-VN') : 'Mới'}
                     </div>
@@ -404,24 +556,24 @@ export default function AdminChatPage() {
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <div className="flex items-center rounded-xl border border-gray-100 bg-gray-50 px-3 py-1.5 focus-within:border-primary-200 focus-within:bg-white transition-all">
-                    <SearchIcon size={14} className="mr-2 text-gray-400" />
+                  <div className="flex items-center rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 transition-all focus-within:border-primary-200 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
+                    <SearchIcon size={14} className="mr-2 text-slate-400" />
                     <input
                       id="admin-chat-search-message"
                       type="text"
                       placeholder="Tìm tin nhắn..."
-                      className="w-28 bg-transparent text-xs outline-none focus:w-44 transition-all"
+                      className="w-28 bg-transparent text-xs font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:w-44"
                       value={messageSearchTerm}
                       onChange={(e) => setMessageSearchTerm(e.target.value)}
                     />
                     {messageSearchTerm && (
-                      <button onClick={() => setMessageSearchTerm('')} className="rounded-full p-1 hover:bg-gray-200">
-                        <X size={10} className="text-gray-500" />
+                      <button onClick={() => setMessageSearchTerm('')} className="rounded-full p-1 hover:bg-slate-200">
+                        <X size={10} className="text-slate-500" />
                       </button>
                     )}
                   </div>
 
-                  <div className="flex items-center rounded-xl border border-gray-100 bg-gray-50 p-1">
+                  <div className="flex items-center rounded-2xl border border-slate-100 bg-slate-50 p-1">
                     {(['low', 'normal', 'high', 'urgent'] as const).map((p) => {
                       const info = getPriorityInfo(p);
                       const isActive = (selectedRoom.priority || 'normal') === p;
@@ -430,7 +582,7 @@ export default function AdminChatPage() {
                           id={`admin-chat-priority-${p}`}
                           key={p}
                           onClick={() => handleUpdatePriority(selectedRoom.id, p)}
-                          className={`rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase tracking-tight transition-all ${isActive ? `${info.color} ring-1 ring-white shadow` : 'text-gray-400 hover:bg-white hover:text-gray-600'
+                          className={`rounded-xl px-2.5 py-1.5 text-[10px] font-black uppercase tracking-tight transition-all ${isActive ? `${info.color} ring-1 ring-white shadow` : 'text-slate-400 hover:bg-white hover:text-slate-600'
                             }`}
                         >
                           {info.label}
@@ -442,7 +594,7 @@ export default function AdminChatPage() {
                   <button
                     id="admin-chat-close-desktop"
                     onClick={handleCloseRoom}
-                    className="hidden rounded-xl bg-red-50 p-2.5 text-red-600 transition-all hover:bg-red-600 hover:text-white lg:block"
+                    className="hidden rounded-2xl bg-red-50 p-3 text-red-600 transition-all hover:bg-red-600 hover:text-white lg:block"
                     title="Kết thúc tư vấn"
                   >
                     <Trash2 size={18} />
@@ -451,10 +603,10 @@ export default function AdminChatPage() {
               </div>
             </div>
 
-            <div className="custom-scrollbar relative flex-1 space-y-4 overflow-y-auto bg-slate-50/50 p-3 sm:p-4 lg:p-6">
+            <div className="custom-scrollbar relative min-h-0 flex-1 space-y-5 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_30%),linear-gradient(180deg,#f8fafc,#eef2ff_140%)] p-3 sm:p-5 lg:p-7">
               {isSearchingMessages && (
                 <div className="sticky top-0 z-20 mb-3 flex justify-center">
-                  <div className="flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-1.5 text-xs font-bold text-primary-600 shadow-sm backdrop-blur">
+                  <div className="flex items-center gap-2 rounded-full border border-primary-100 bg-white/90 px-4 py-2 text-xs font-black text-primary-600 shadow-sm backdrop-blur">
                     <SearchIcon size={12} />
                     Đang tìm: "{messageSearchTerm}" ({messages.length})
                   </div>
@@ -462,47 +614,51 @@ export default function AdminChatPage() {
               )}
 
               {messages.length === 0 ? (
-                <div className="mt-16 text-center text-sm text-gray-400">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/50 grayscale">
+                <div className="mt-16 text-center text-sm text-slate-400">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/70 shadow-sm grayscale">
                     <AlertCircle size={30} />
                   </div>
-                  <p className="font-medium">
+                  <p className="font-bold">
                     {isSearchingMessages ? 'Không tìm thấy tin nhắn trùng khớp' : 'Chưa có dữ liệu hội thoại'}
                   </p>
                 </div>
               ) : (
                 messages.map((msg, idx) => {
                   const isSystem = msg.senderName === 'System';
+                  const parsedMessage = parseChatMessage(msg.message);
                   if (isSystem) {
                     return (
                       <div key={idx} className="my-3 flex justify-center animate-in fade-in zoom-in-95">
-                        <span className="rounded-full bg-gray-200/50 px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-500 backdrop-blur-sm">
-                          {msg.message}
+                        <span className="rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 shadow-sm backdrop-blur-sm">
+                          {parsedMessage.text}
                         </span>
                       </div>
                     );
                   }
 
+                  const isOwnMessage = msg.senderType === 'admin';
+
                   return (
-                    <div key={idx} className={`group flex ${msg.senderType === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`flex max-w-[88%] flex-col sm:max-w-[78%] lg:max-w-[70%] ${msg.senderType === 'admin' ? 'items-end' : 'items-start'}`}>
+                    <div key={idx} className={`group flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex max-w-[90%] flex-col sm:max-w-[78%] lg:max-w-[68%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
                         <div
-                          className={`relative whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${msg.senderType === 'admin'
-                              ? 'rounded-tr-none bg-primary-600 text-white'
-                              : 'rounded-tl-none border border-gray-100 bg-white text-gray-800 ring-1 ring-gray-50'
+                          className={`relative rounded-[22px] px-4 py-3 text-[15px] leading-7 shadow-sm ${isOwnMessage
+                              ? 'rounded-tr-md bg-gradient-to-br from-primary-600 to-blue-700 text-white shadow-primary-200/60'
+                              : 'rounded-tl-md border border-white bg-white text-slate-800 shadow-[0_16px_32px_rgba(15,23,42,0.08)] ring-1 ring-slate-100'
                             }`}
                         >
-                          {msg.message}
+                          {parsedMessage.text && <p className="whitespace-pre-wrap font-medium">{parsedMessage.text}</p>}
+                          {parsedMessage.attachment && renderAttachment(parsedMessage.attachment, isOwnMessage)}
                           {isSearchingMessages && (
                             <div className="absolute -right-1 -top-1 h-3 w-3 animate-ping rounded-full bg-primary-400" />
                           )}
                         </div>
                         <div className="mt-1.5 flex items-center gap-2 px-2">
                           {msg.senderType === 'admin' && (
-                            <span className="text-[9px] font-black uppercase text-primary-400">Đã gửi</span>
+                            <span className="text-[9px] font-black uppercase text-primary-500">Đã gửi</span>
                           )}
                           {msg.createdAt && (
-                            <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">
+                            <p className="text-[10px] font-black uppercase tracking-tight text-slate-400">
                               {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}
@@ -515,40 +671,75 @@ export default function AdminChatPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-gray-100 bg-white p-3 sm:p-4">
-              <div className="group flex items-end gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-2.5 transition-all focus-within:border-primary-200 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
+            <div className="shrink-0 border-t border-slate-100 bg-white p-3 shadow-[0_-18px_40px_rgba(15,23,42,0.04)] sm:p-4">
+              {selectedFile && (
+                <div className="mb-2 flex items-center gap-2 rounded-2xl border border-primary-100 bg-primary-50/60 px-3 py-2 text-xs text-slate-600">
+                  <FileText size={15} className="shrink-0 text-primary-600" />
+                  <span className="min-w-0 flex-1 truncate font-semibold">{selectedFile.name}</span>
+                  <span className="text-slate-400">{formatFileSize(selectedFile.size)}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    className="rounded-full p-1 hover:bg-primary-100"
+                    aria-label="Bỏ file đã chọn"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              )}
+              <div className="group flex items-end gap-3 rounded-[24px] border border-slate-100 bg-slate-50 p-2.5 transition-all focus-within:border-primary-200 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp,image/gif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!selectedRoom || isSearchingMessages || uploadingAttachment}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-500 shadow-sm transition hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-30"
+                  title="Đính kèm ảnh hoặc file"
+                >
+                  <Paperclip size={18} />
+                </button>
                 <textarea
                   id="admin-chat-input"
                   placeholder={isSearchingMessages ? 'Hãy thoát tìm kiếm để tiếp tục trả lời...' : 'Nhập nội dung tư vấn và nhấn Enter...'}
                   rows={1}
-                  disabled={isSearchingMessages}
+                  disabled={isSearchingMessages || uploadingAttachment}
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
+                  onPaste={handlePaste}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       handleSendMessage();
                     }
                   }}
-                  className="min-h-[42px] max-h-32 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none"
+                  className="min-h-[42px] max-h-32 flex-1 resize-none bg-transparent px-3 py-2 text-[15px] font-medium leading-6 text-slate-800 outline-none placeholder:text-slate-400"
                 />
                 <button
                   id="admin-chat-send"
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isSearchingMessages}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-600 text-white shadow-lg shadow-primary-200 transition-all active:scale-90 disabled:cursor-not-allowed disabled:opacity-20"
+                  disabled={(!inputMessage.trim() && !selectedFile) || isSearchingMessages || uploadingAttachment}
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-blue-700 text-white shadow-lg shadow-primary-200 transition-all hover:-translate-y-0.5 active:scale-90 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-20"
                 >
-                  <Send size={18} className="ml-0.5" />
+                  {uploadingAttachment ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} className="ml-0.5" />}
                 </button>
               </div>
 
               <div className="mt-2 flex items-center justify-between px-1">
-                <p className="text-[10px] font-bold uppercase text-gray-400">Nhấn Shift + Enter để xuống dòng</p>
+                <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Shift + Enter xuống dòng · Ctrl + V để dán ảnh</p>
                 {isSearchingMessages && (
                   <button
                     id="admin-chat-exit-search"
                     onClick={() => setMessageSearchTerm('')}
-                    className="text-[10px] font-black uppercase text-primary-600 hover:underline"
+                    className="text-[10px] font-black uppercase tracking-wide text-primary-600 hover:underline"
                   >
                     Thoát tìm kiếm
                   </button>

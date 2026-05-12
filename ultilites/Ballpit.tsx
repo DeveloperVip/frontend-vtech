@@ -87,8 +87,8 @@ export default function BallpitFallback({
                     vy: (Math.random() - 0.5) * 3 + 0.5,
                     r,
                     hue,
-                    sat: 80 + Math.random() * 15,
-                    lit: 45 + Math.random() * 15,
+                    sat: 85 + Math.random() * 15,
+                    lit: 75 + Math.random() * 15,
                     mass: r * r,
                 });
             }

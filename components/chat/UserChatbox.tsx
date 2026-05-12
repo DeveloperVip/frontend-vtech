@@ -13,10 +13,11 @@
 // }
 
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Minimize2, User as UserIcon, LogIn, Info, History, ShieldAlert } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, User as UserIcon, LogIn, History, ShieldAlert, Phone, Paperclip, FileText, Eye, EyeOff } from 'lucide-react';
 import socketService from '@/services/socketService';
 import { useUserAuthStore } from '@/hooks/useUserAuthStore';
 import toast from 'react-hot-toast';
+import { formatFileSize, parseChatMessage, uploadChatAttachment, type ChatAttachment } from '@/lib/chatMessage';
 
 interface Message {
   id?: number;
@@ -42,7 +43,11 @@ export default function UserChatbox() {
   const [roomId, setRoomId] = useState<number | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user, token, isAuthenticated, setUser, setToken } = useUserAuthStore();
 
@@ -178,22 +183,75 @@ export default function UserChatbox() {
     });
   };
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim() || !roomId) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File tối đa 10MB');
+      e.target.value = '';
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageItem = items.find((item) => item.kind === 'file' && item.type.startsWith('image/'));
+    const pastedFile = imageItem?.getAsFile();
+
+    if (!pastedFile) return;
+
+    e.preventDefault();
+
+    if (pastedFile.size > 10 * 1024 * 1024) {
+      toast.error('Ảnh tối đa 10MB');
+      return;
+    }
+
+    const ext = pastedFile.type.split('/')[1] || 'png';
+    const file = new File([pastedFile], `anh-dan-tu-clipboard-${Date.now()}.${ext}`, {
+      type: pastedFile.type || 'image/png',
+    });
+
+    setSelectedFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast.success('Đã dán ảnh vào tin nhắn');
+  };
+
+  const handleSendMessage = async () => {
+    if ((!inputMessage.trim() && !selectedFile) || !roomId || uploadingAttachment) return;
 
     const userId = isAuthenticated
       ? user?.id.toString()
       : sessionStorage.getItem('chat_guest_id');
 
-    socketService.emit('message:send', {
-      roomId,
-      message: inputMessage.trim(),
-      senderType: 'user',
-      senderId: userId || 'unknown',
-      senderName: userName || user?.name || 'Khách',
-    });
+    try {
+      let attachment: ChatAttachment | undefined;
 
-    setInputMessage('');
+      if (selectedFile) {
+        setUploadingAttachment(true);
+        attachment = await uploadChatAttachment(selectedFile);
+      }
+
+      socketService.emit('message:send', {
+        roomId,
+        message: inputMessage.trim(),
+        attachment,
+        senderType: 'user',
+        senderId: userId || 'unknown',
+        senderName: userName || user?.name || 'Khách',
+      });
+
+      setInputMessage('');
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể gửi file');
+    } finally {
+      setUploadingAttachment(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -203,6 +261,34 @@ export default function UserChatbox() {
         handleSendMessage();
       }
     }
+  };
+
+  const renderAttachment = (attachment: ChatAttachment, isOwnMessage: boolean) => {
+    if (attachment.kind === 'image') {
+      return (
+        <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="mt-2 block overflow-hidden rounded-xl">
+          <img src={attachment.url} alt={attachment.name} className="max-h-48 w-full object-cover" />
+        </a>
+      );
+    }
+
+    return (
+      <a
+        href={attachment.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`mt-2 flex items-center gap-2 rounded-xl border p-2 transition ${isOwnMessage
+          ? 'border-white/20 bg-white/10 text-white hover:bg-white/15'
+          : 'border-gray-100 bg-gray-50 text-gray-700 hover:bg-gray-100'
+          }`}
+      >
+        <FileText size={18} className="shrink-0" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-xs font-bold">{attachment.name}</span>
+          <span className={`text-[10px] ${isOwnMessage ? 'text-white/70' : 'text-gray-400'}`}>{formatFileSize(attachment.size)}</span>
+        </span>
+      </a>
+    );
   };
 
   if (!isOpen) {
@@ -237,6 +323,15 @@ export default function UserChatbox() {
             </svg>
           </a>
 
+          {/* Phone */}
+          <a
+            href="tel:02466828899"
+            title="Gọi điện"
+            className="chat-wiggle chat-wiggle-phone w-12 h-12 bg-emerald-500 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+          >
+            <Phone size={23} className="text-white" />
+          </a>
+
           {/* Live Chat */}
           <button
             onClick={() => setIsOpen(true)}
@@ -262,8 +357,12 @@ export default function UserChatbox() {
             animation-delay: 0.25s;
           }
 
-          .chat-wiggle-live {
+          .chat-wiggle-phone {
             animation-delay: 0.5s;
+          }
+
+          .chat-wiggle-live {
+            animation-delay: 0.75s;
           }
 
           @keyframes chatWiggle {
@@ -436,14 +535,24 @@ export default function UserChatbox() {
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-700 uppercase mb-1 block">Mật khẩu</label>
-                  <input
-                    type="password"
-                    required
-                    className="input-field w-full"
-                    placeholder="••••••••"
-                    value={loginPassword}
-                    onChange={e => setLoginPassword(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showLoginPassword ? 'text' : 'password'}
+                      required
+                      className="input-field w-full pr-11"
+                      placeholder="••••••••"
+                      value={loginPassword}
+                      onChange={e => setLoginPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-primary-600"
+                      aria-label={showLoginPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      {showLoginPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -470,50 +579,93 @@ export default function UserChatbox() {
                     <p className="mt-1 text-xs px-10">Gửi lời chào để bắt đầu kết nối với tư vấn viên</p>
                   </div>
                 ) : (
-                  messages.map((msg, idx) => (
-                    <div key={idx} className={`flex flex-col ${msg.senderType === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl shadow-sm text-sm ${msg.senderType === 'user'
-                          ? 'bg-primary-600 text-white rounded-tr-none'
-                          : msg.senderName === 'System'
-                            ? 'bg-gray-200 text-gray-600 text-center text-xs mx-auto shadow-none rounded-md italic py-1'
-                            : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
-                        }`}
-                      >
-                        {msg.senderType === 'admin' && msg.senderName !== 'System' && (
-                          <p className="text-[11px] font-extrabold mb-1 text-blue-600 flex items-center gap-1 tracking-tight">
-                            <span className="w-1 h-1 bg-blue-600 rounded-full inline-block" />
-                            {msg.senderName}
-                          </p>
-                        )}
-                        <p className="whitespace-pre-wrap leading-relaxed">{msg.message}</p>
+                  messages.map((msg, idx) => {
+                    const parsedMessage = parseChatMessage(msg.message);
+                    const isOwnMessage = msg.senderType === 'user';
+
+                    return (
+                      <div key={idx} className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                        <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl shadow-sm text-sm ${isOwnMessage
+                            ? 'bg-primary-600 text-white rounded-tr-none'
+                            : msg.senderName === 'System'
+                              ? 'bg-gray-200 text-gray-600 text-center text-xs mx-auto shadow-none rounded-md italic py-1'
+                              : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+                          }`}
+                        >
+                          {msg.senderType === 'admin' && msg.senderName !== 'System' && (
+                            <p className="text-[11px] font-extrabold mb-1 text-blue-600 flex items-center gap-1 tracking-tight">
+                              <span className="w-1 h-1 bg-blue-600 rounded-full inline-block" />
+                              {msg.senderName}
+                            </p>
+                          )}
+                          {parsedMessage.text && <p className="whitespace-pre-wrap leading-relaxed">{parsedMessage.text}</p>}
+                          {parsedMessage.attachment && renderAttachment(parsedMessage.attachment, isOwnMessage)}
+                        </div>
+                        <span className="text-[10px] text-gray-400 mt-1 px-1">
+                          {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        </span>
                       </div>
-                      <span className="text-[10px] text-gray-400 mt-1 px-1">
-                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="border-t border-gray-100 p-4 bg-white flex gap-2 items-end">
-                <textarea
-                  placeholder="Viết tin nhắn..."
-                  rows={1}
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border-gray-100 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 placeholder-gray-400 resize-none max-h-32"
-                  style={{ minHeight: '44px' }}
-                />
+              <div className="border-t border-gray-100 p-4 bg-white">
+                {selectedFile && (
+                  <div className="mb-2 flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                    <FileText size={15} className="shrink-0 text-primary-600" />
+                    <span className="min-w-0 flex-1 truncate font-semibold">{selectedFile.name}</span>
+                    <span className="text-gray-400">{formatFileSize(selectedFile.size)}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                      className="rounded-full p-1 hover:bg-gray-200"
+                      aria-label="Bỏ file đã chọn"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
+                <div className="flex gap-2 items-end">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/jpeg,image/png,image/webp,image/gif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                    onChange={handleFileChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!isJoined || uploadingAttachment}
+                    className="w-11 h-11 rounded-full border border-gray-100 bg-gray-50 text-gray-500 flex items-center justify-center shrink-0 hover:bg-gray-100 disabled:opacity-30"
+                    title="Đính kèm ảnh hoặc file"
+                  >
+                    <Paperclip size={18} />
+                  </button>
+                  <textarea
+                    placeholder="Viết tin nhắn..."
+                    rows={1}
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onPaste={handlePaste}
+                    onKeyPress={handleKeyPress}
+                    className="flex-1 px-4 py-2.5 bg-gray-50 border-gray-100 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 placeholder-gray-400 resize-none max-h-32"
+                    style={{ minHeight: '44px' }}
+                  />
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || !isJoined}
+                  disabled={(!inputMessage.trim() && !selectedFile) || !isJoined || uploadingAttachment}
                   className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30 disabled:grayscale hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary-100"
                   style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
                 >
-                  <Send size={18} className="text-white ml-0.5" />
+                    {uploadingAttachment ? <Loader2 className="animate-spin text-white" size={18} /> : <Send size={18} className="text-white ml-0.5" />}
                 </button>
+                </div>
               </div>
             </>
           )}

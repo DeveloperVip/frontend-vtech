@@ -13,29 +13,31 @@ const intensityMap = {
     driftDistance: 12,
     driftDuration: 7600,
     beamOpacity: '0.16,0.34,0.16',
-    // gridOpacityClass: 'opacity-[0.10]',
     blobScale: 'scale-100',
   },
   medium: {
     driftDistance: 18,
     driftDuration: 6100,
     beamOpacity: '0.2,0.48,0.2',
-    // gridOpacityClass: 'opacity-[0.16]',
     blobScale: 'scale-110',
   },
   bold: {
     driftDistance: 26,
     driftDuration: 4900,
     beamOpacity: '0.28,0.65,0.28',
-    // gridOpacityClass: 'opacity-[0.22]',
     blobScale: 'scale-125',
   },
 } as const;
 
+/**
+ * Banner visual effects – optimized to use Canvas2D for cursor trail
+ * instead of spawning/removing DOM elements on every pointer move.
+ */
 export default function BannerEffects({ variant = 'light', intensity = 'soft' }: BannerEffectsProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const cursorGlowRef = useRef<HTMLDivElement | null>(null);
   const cursorHaloRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const cfg = useMemo(() => intensityMap[intensity], [intensity]);
   const gridOpacityClass = intensity === 'soft' ? 'opacity-[0.10]' : intensity === 'medium' ? 'opacity-[0.16]' : 'opacity-[0.22]';
@@ -44,55 +46,41 @@ export default function BannerEffects({ variant = 'light', intensity = 'soft' }:
     const root = rootRef.current;
     const cursorGlow = cursorGlowRef.current;
     const cursorHalo = cursorHaloRef.current;
-    if (!root || !cursorGlow || !cursorHalo) return;
+    const canvas = canvasRef.current;
+    if (!root || !cursorGlow || !cursorHalo || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const captureTarget = root.parentElement ?? root;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) return;
+
+    // Canvas sizing
+    const resizeCanvas = () => {
+      const rect = root.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
     let currentX = 0;
     let currentY = 0;
     let targetX = 0;
     let targetY = 0;
     let rafId: number | null = null;
-    const trailQueue: Array<{ x: number; y: number }> = [];
     let previousCell: { cx: number; cy: number } | null = null;
     const trailCellSize = 26;
     const trailFadeMs = 820;
 
-    const spawnTrailPixel = (x: number, y: number) => {
-      const pixel = document.createElement('span');
-      pixel.className = 'absolute pointer-events-none rounded-[4px]';
-      pixel.style.width = `${trailCellSize}px`;
-      pixel.style.height = `${trailCellSize}px`;
-      pixel.style.left = `${x - trailCellSize / 2}px`;
-      pixel.style.top = `${y - trailCellSize / 2}px`;
-
-      const palette = [
-        'rgba(255,255,255,0.82)',
-        'rgba(196,231,255,0.78)',
-        'rgba(187,160,255,0.74)',
-      ];
-      const color = palette[Math.floor(Math.random() * palette.length)];
-
-      pixel.style.background = color;
-      pixel.style.boxShadow = `0 0 18px ${color}`;
-      pixel.style.opacity = '0.95';
-      pixel.style.zIndex = '35';
-      pixel.style.transform = 'scale(1)';
-      pixel.style.transition = `opacity ${trailFadeMs}ms ease-out, transform ${trailFadeMs}ms ease-out`;
-
-      root.appendChild(pixel);
-
-      window.requestAnimationFrame(() => {
-        pixel.style.opacity = '0';
-        pixel.style.transform = 'scale(0.5)';
-      });
-
-      window.setTimeout(() => {
-        pixel.remove();
-      }, trailFadeMs + 80);
-    };
+    // Particle pool rendered on canvas instead of DOM
+    const particles: Array<{ x: number; y: number; color: string; born: number }> = [];
+    const palette = [
+      'rgba(255,255,255,0.82)',
+      'rgba(196,231,255,0.78)',
+      'rgba(187,160,255,0.74)',
+    ];
 
     const setTransform = (x: number, y: number) => {
       cursorGlow.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
@@ -108,15 +96,40 @@ export default function BannerEffects({ variant = 'light', intensity = 'soft' }:
       setTransform(currentX, currentY);
     };
 
-    const animateFrame = () => {
+    const animateFrame = (now: number) => {
       currentX += (targetX - currentX) * 0.12;
       currentY += (targetY - currentY) * 0.12;
       setTransform(currentX, currentY);
 
-      if (trailQueue.length) {
-        const batch = trailQueue.splice(0, Math.min(5, trailQueue.length));
-        batch.forEach((point) => spawnTrailPixel(point.x, point.y));
+      // Draw trail particles on canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const fadeRate = 1 / trailFadeMs;
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const age = now - p.born;
+        const t = Math.min(age * fadeRate, 1);
+        const opacity = 0.95 * (1 - t);
+        const scale = 1 - 0.5 * t;
+
+        if (opacity <= 0.01) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        const size = trailCellSize * scale;
+        const half = size / 2;
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.roundRect(p.x - half, p.y - half, size, size, 4);
+        ctx.fill();
       }
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
 
       rafId = window.requestAnimationFrame(animateFrame);
     };
@@ -136,9 +149,10 @@ export default function BannerEffects({ variant = 'light', intensity = 'soft' }:
 
       if (!previousCell || previousCell.cx !== cx || previousCell.cy !== cy) {
         previousCell = { cx, cy };
-        trailQueue.push(
-          { x: x + (Math.random() - 0.5) * trailCellSize * 0.7, y: y + (Math.random() - 0.5) * trailCellSize * 0.7 },
-          { x: x + (Math.random() - 0.5) * trailCellSize * 0.7, y: y + (Math.random() - 0.5) * trailCellSize * 0.7 },
+        const now = performance.now();
+        particles.push(
+          { x: x + (Math.random() - 0.5) * trailCellSize * 0.7, y: y + (Math.random() - 0.5) * trailCellSize * 0.7, color: palette[Math.floor(Math.random() * palette.length)], born: now },
+          { x: x + (Math.random() - 0.5) * trailCellSize * 0.7, y: y + (Math.random() - 0.5) * trailCellSize * 0.7, color: palette[Math.floor(Math.random() * palette.length)], born: now },
         );
       }
     };
@@ -225,6 +239,7 @@ export default function BannerEffects({ variant = 'light', intensity = 'soft' }:
       captureTarget.removeEventListener('pointermove', handlePointerMove);
       captureTarget.removeEventListener('pointerleave', handlePointerLeave);
       window.removeEventListener('resize', setInitialPosition);
+      window.removeEventListener('resize', resizeCanvas);
       if (rafId) window.cancelAnimationFrame(rafId);
     };
   }, [cfg]);
@@ -260,6 +275,13 @@ export default function BannerEffects({ variant = 'light', intensity = 'soft' }:
       <div className={`rb-float absolute -bottom-14 left-1/3 h-44 w-44 rounded-full bg-blue-200/24 blur-3xl ${cfg.blobScale}`} />
 
       <div className="rb-sweep absolute top-[32%] h-[42%] w-[28%] -skew-x-12 bg-gradient-to-r from-transparent via-white/35 to-transparent blur-xl" />
+
+      {/* Canvas for cursor trail particles – replaces DOM-spawned spans */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{ zIndex: 35 }}
+      />
 
       <div
         ref={cursorHaloRef}

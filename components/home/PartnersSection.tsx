@@ -1,13 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
 
 const SCROLL_SPEED = 100;
 const DRAG_ELASTIC = 0.02;
 const DRAG_MOMENTUM = false;
 
-const partnerLogos = [
+interface PartnerLogo {
+  name: string;
+  src: string;
+  website?: string | null;
+}
+
+const fallbackPartnerLogos: PartnerLogo[] = [
   { name: 'Kistler-Đức', src: '/logo/Kistler-Đức.svg' },
   { name: 'Atech Training – Mỹ', src: '/logo/Atech Training – Mỹ .svg' },
   { name: 'ETS DIDACTIC MGBH – Đức', src: '/logo/ETS DIDACTIC MGBH – Đức.svg' },
@@ -34,19 +40,53 @@ const partnerLogos = [
   { name: 'Mitutoyo – Nhật Bản', src: '/logo/Mitutoyo – Nhật Bản.svg' },
 ];
 
+const normalizeX = (value: number, width: number) => {
+  if (!width) return value;
+  let next = value % width;
+  if (next > 0) next -= width;
+  return next;
+};
+
 export default function PartnersSection() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const x = useMotionValue(0);
   const [loopWidth, setLoopWidth] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [partners, setPartners] = useState<PartnerLogo[]>([]);
 
-  const normalizeX = (value: number, width: number) => {
-    if (!width) return value;
-    let next = value % width;
-    if (next > 0) next -= width;
-    return next;
-  };
+  const displayLogos = useMemo(() => (partners.length > 0 ? partners : fallbackPartnerLogos), [partners]);
+  const loopItems = useMemo(() => [...displayLogos, ...displayLogos], [displayLogos]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadPartners = async () => {
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+        const res = await fetch(`${apiBase}/partners?active=true`, { cache: 'no-store' });
+        const json = await res.json();
+        const data = Array.isArray(json?.data) ? json.data : [];
+
+        if (!ignore && data.length > 0) {
+          setPartners(
+            data.map((partner: { name: string; logoUrl?: string | null; website?: string | null }) => ({
+              name: partner.name,
+              src: partner.logoUrl || '',
+              website: partner.website || null,
+            })),
+          );
+        }
+      } catch {
+        // Giữ fallback logo tĩnh khi API chưa sẵn sàng.
+      }
+    };
+
+    loadPartners();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -59,7 +99,7 @@ export default function PartnersSection() {
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
-  }, [x]);
+  }, [x, displayLogos.length]);
 
   useAnimationFrame((_, delta) => {
     if (!loopWidth || isHovering || isDragging) return;
@@ -96,33 +136,58 @@ export default function PartnersSection() {
             x.set(normalizeX(x.get(), loopWidth));
           }}
         >
-          {[...partnerLogos, ...partnerLogos].map((logo, index) => (
-            <div
-              key={index}
-              className="group relative w-[180px] h-20 flex justify-center items-center shrink-0"
-            >
-              <img
-                src={logo.src}
-                alt={logo.name}
-                className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
-              />
+          {loopItems.map((logo, index) => {
+            const content = (
+              <>
+                {logo.src ? (
+                  <img
+                    src={logo.src}
+                    alt={logo.name}
+                    className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-black uppercase tracking-tight text-slate-500 transition-transform duration-300 ease-out group-hover:scale-105">
+                    {logo.name}
+                  </span>
+                )}
 
-              {/* Tooltip */}
-              <div
-                className={`
-                  pointer-events-none
-                  absolute left-1/2 -translate-x-1/2 bottom-full mb-2
-                  whitespace-nowrap
-                  rounded-md bg-black/90 px-2.5 py-1 text-[11px] font-medium text-white
-                  transition-all duration-200 ease-out
-                  ${!isDragging ? "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0" : "opacity-0"}
-                  z-20
-                `}
+                {/* Tooltip */}
+                <div
+                  className={`
+                    pointer-events-none
+                    absolute left-1/2 -translate-x-1/2 bottom-full mb-2
+                    whitespace-nowrap
+                    rounded-md bg-black/90 px-2.5 py-1 text-[11px] font-medium text-white
+                    transition-all duration-200 ease-out
+                    ${!isDragging ? "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0" : "opacity-0"}
+                    z-20
+                  `}
+                >
+                  {logo.name}
+                </div>
+              </>
+            );
+
+            return logo.website ? (
+              <a
+                key={`${logo.name}-${index}`}
+                href={logo.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative w-[180px] h-20 flex justify-center items-center shrink-0"
+                aria-label={`Mở website ${logo.name}`}
               >
-                {logo.name}
+                {content}
+              </a>
+            ) : (
+              <div
+                key={`${logo.name}-${index}`}
+                className="group relative w-[180px] h-20 flex justify-center items-center shrink-0"
+              >
+                {content}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </motion.div>
       </div>
 

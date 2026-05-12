@@ -5,12 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUserAuthStore } from '@/hooks/useUserAuthStore';
 import toast from 'react-hot-toast';
-import { LogIn, Mail, Lock, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { LogIn, Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [showForgotForm, setShowForgotForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const setUser = useUserAuthStore((state) => state.setUser);
   const setToken = useUserAuthStore((state) => state.setToken);
@@ -45,6 +49,33 @@ export default function LoginPage() {
       toast.error('Có lỗi xảy ra, vui lòng thử lại sau');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/users/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: forgotIdentifier }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Vui lòng kiểm tra email để đặt lại mật khẩu');
+        setShowForgotForm(false);
+        setForgotIdentifier('');
+      } else {
+        toast.error(data.message || 'Không thể gửi email đặt lại mật khẩu');
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại sau');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -99,15 +130,36 @@ export default function LoginPage() {
                   <Lock size={18} />
                 </span>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  className="appearance-none rounded-xl relative block w-full px-10 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-gray-50/50"
+                  className="appearance-none rounded-xl relative block w-full pl-10 pr-12 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-gray-50/50"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-primary-600"
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                setShowForgotForm((prev) => !prev);
+                setForgotIdentifier(identifier);
+              }}
+              className="text-sm font-bold text-primary-600 hover:text-primary-700"
+            >
+              Quên mật khẩu?
+            </button>
           </div>
 
           <div>
@@ -129,6 +181,39 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
+
+        {showForgotForm && (
+          <form onSubmit={handleForgotPassword} className="rounded-2xl border border-primary-100 bg-primary-50/60 p-4">
+            <h3 className="text-sm font-bold text-gray-900">Lấy lại mật khẩu</h3>
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Nhập email hoặc số điện thoại đã đăng ký. Hệ thống sẽ gửi link đặt lại mật khẩu tới email tài khoản.
+            </p>
+            <input
+              type="text"
+              required
+              className="mt-3 w-full rounded-xl border border-primary-100 bg-white px-4 py-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+              placeholder="Email hoặc số điện thoại"
+              value={forgotIdentifier}
+              onChange={(e) => setForgotIdentifier(e.target.value)}
+            />
+            <div className="mt-3 flex gap-2">
+              <button
+                type="submit"
+                disabled={forgotLoading}
+                className="flex-1 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-primary-700 disabled:opacity-50"
+              >
+                {forgotLoading ? 'Đang gửi...' : 'Gửi link đặt lại'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForgotForm(false)}
+                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-600 transition hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+            </div>
+          </form>
+        )}
 
         <div className="text-center mt-6 space-y-2">
           <p className="text-sm text-gray-600">
