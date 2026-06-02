@@ -241,36 +241,6 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
               />
             </div>
 
-            {/* SEO */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-              <h2 className="font-semibold text-gray-700 text-sm flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                SEO
-              </h2>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
-                <input
-                  className="input-field"
-                  value={form.metaTitle}
-                  onChange={(e) => setField('metaTitle', e.target.value)}
-                  placeholder="Để trống = dùng tiêu đề bài viết"
-                  maxLength={70}
-                />
-                <div className="text-right text-xs text-gray-400 mt-1">{form.metaTitle.length}/70</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
-                <textarea
-                  className="input-field resize-none"
-                  rows={2}
-                  value={form.metaDescription}
-                  onChange={(e) => setField('metaDescription', e.target.value)}
-                  placeholder="Mô tả SEO..."
-                  maxLength={160}
-                />
-                <div className="text-right text-xs text-gray-400 mt-1">{form.metaDescription.length}/160</div>
-              </div>
-            </div>
           </div>
 
           {/* ── RIGHT SIDEBAR ── */}

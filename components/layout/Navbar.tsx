@@ -75,17 +75,17 @@ export default function Navbar({ config: _config }: { config?: Record<string, st
 
     const attach = () => {
       applyHeartEffect('.navbar-cta-heart', {
-        count: 14,
-        duration: 980,
-        size: 10,
-        burstOnInit: true,
+        count: 4,
+        duration: 900,
+        size: 7,
+        burstOnInit: false,
         overflowHidden: false,
       });
 
       applyHeartEffect('.navbar-tab-fx', {
-        count: 6,
-        duration: 760,
-        size: 6,
+        count: 2,
+        duration: 720,
+        size: 4,
         overflowHidden: false,
       });
     };

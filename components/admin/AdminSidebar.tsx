@@ -156,22 +156,22 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
   };
 
   return (
-    <aside className="flex min-h-screen w-60 flex-col bg-gray-900 text-gray-300 md:w-60">
+    <aside className="flex min-h-screen w-64 flex-col border-r border-slate-200 bg-white text-slate-600 shadow-[12px_0_40px_rgba(15,23,42,0.04)] md:w-64">
       {/* Brand */}
-      <div className="border-b border-gray-800 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="border-b border-slate-200 px-4 py-4 sm:px-5 sm:py-5">
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={openAccountSettings}
-            className="group flex min-w-0 items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-gray-800"
+            className="group flex min-w-0 items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50"
             title="Cài đặt tài khoản admin"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-700 text-lg font-bold text-white">V</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-lg font-bold text-white shadow-sm shadow-indigo-200">V</div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold leading-tight text-white">Vitechs Admin</p>
-              <p className="text-xs text-gray-500">{admin?.role}</p>
+              <p className="text-sm font-semibold leading-tight text-slate-950">Vitechs Admin</p>
+              <p className="text-xs text-slate-400">{admin?.role}</p>
             </div>
-            <Edit2 size={14} className="opacity-0 text-gray-400 transition group-hover:opacity-100" />
+            <Edit2 size={14} className="opacity-0 text-slate-500 transition group-hover:opacity-100" />
           </button>
           {showCloseButton && (
             <button
@@ -179,7 +179,7 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
               type="button"
               aria-label="Đóng menu"
               onClick={onNavigate}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-700 text-gray-300 hover:bg-gray-800 md:hidden"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-700 text-gray-300 hover:bg-slate-50 md:hidden"
             >
               <X size={16} />
             </button>
@@ -204,7 +204,7 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
                     onClick={() => onNavigate?.()}
                     className={clsx(
                       'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
-                      active ? 'bg-primary-700 text-white shadow-sm shadow-primary-950/30' : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                      active ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900',
                     )}
                   >
                     {item.icon}
@@ -219,22 +219,22 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
       </nav>
 
       {/* User & Logout */}
-      <div className="border-t border-gray-800 px-3 py-4">
+      <div className="border-t border-slate-200 px-3 py-4">
         <button
           onClick={openAccountSettings}
-          className="group mb-2 w-full rounded-lg px-3 py-2 transition hover:bg-gray-800"
+          className="group mb-2 w-full rounded-lg px-3 py-2 transition hover:bg-slate-50"
         >
           <div className="flex items-center justify-between">
             <div className="flex-1 text-left">
-              <p className="truncate text-sm font-medium text-white">{admin?.name}</p>
-              <p className="truncate text-xs text-gray-500">{admin?.email}</p>
+              <p className="truncate text-sm font-medium text-slate-950">{admin?.name}</p>
+              <p className="truncate text-xs text-slate-400">{admin?.email}</p>
             </div>
-            <Edit2 size={16} className="opacity-0 text-gray-400 transition group-hover:opacity-100" />
+            <Edit2 size={16} className="opacity-0 text-slate-500 transition group-hover:opacity-100" />
           </div>
         </button>
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400 transition hover:bg-gray-800 hover:text-white"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
         >
           <LogOut size={18} /> Đăng xuất
         </button>
@@ -244,16 +244,16 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
       {isEditOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div className="w-full max-w-[720px] overflow-hidden rounded-3xl border border-gray-800 bg-gray-950 shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-800 bg-gray-900/80 px-6 py-5">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-gray-900/80 px-6 py-5">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-primary-300">Admin Account</p>
                 <h2 className="mt-1 text-xl font-black text-white">Cài đặt tài khoản</h2>
-                <p className="mt-1 text-sm text-gray-400">Cập nhật thông tin hiển thị và mật khẩu đăng nhập.</p>
+                <p className="mt-1 text-sm text-slate-500">Cập nhật thông tin hiển thị và mật khẩu đăng nhập.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsEditOpen(false)}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-800 text-gray-400 transition hover:bg-gray-800 hover:text-white"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-800 text-slate-500 transition hover:bg-slate-50 hover:text-white"
                 aria-label="Đóng cài đặt tài khoản"
               >
                 <X size={18} />
@@ -268,13 +268,13 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-white">Thông tin admin</h3>
-                    <p className="text-xs text-gray-500">Tên và email quản trị</p>
+                    <p className="text-xs text-slate-400">Tên và email quản trị</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-400">Tên</label>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Tên</label>
                     <input
                       type="text"
                       value={editName}
@@ -284,7 +284,7 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-400">Email</label>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Email</label>
                     <input
                       type="email"
                       value={editEmail}
@@ -312,13 +312,13 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-white">Đổi mật khẩu</h3>
-                    <p className="text-xs text-gray-500">Yêu cầu mật khẩu hiện tại</p>
+                    <p className="text-xs text-slate-400">Yêu cầu mật khẩu hiện tại</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-400">Mật khẩu hiện tại</label>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Mật khẩu hiện tại</label>
                     <div className="relative">
                       <input
                         type={showCurrentPassword ? 'text' : 'password'}
@@ -338,7 +338,7 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
                     </div>
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-400">Mật khẩu mới</label>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Mật khẩu mới</label>
                     <div className="relative">
                       <input
                         type={showNewPassword ? 'text' : 'password'}
@@ -358,7 +358,7 @@ export default function AdminSidebar({ onNavigate, showCloseButton = false }: Ad
                     </div>
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-400">Xác nhận mật khẩu</label>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Xác nhận mật khẩu</label>
                     <div className="relative">
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}

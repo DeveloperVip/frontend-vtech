@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { adminGet, adminPatch } from '@/services/adminService';
 import { Search, RefreshCw, ShieldCheck, ShieldOff, Users as UsersIcon } from 'lucide-react';
+import AdminSelect from '@/components/ui/AdminSelect';
 
 interface UserItem {
   id: number;
@@ -105,15 +106,15 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <UsersIcon size={24} className="text-primary-700" />
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <UsersIcon size={24} className="text-indigo-700" />
             Quản lý người dùng
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Theo dõi tài khoản đã đăng ký và bật/tắt trạng thái hoạt động.</p>
+          <p className="text-sm text-slate-500 mt-1">Theo dõi tài khoản đã đăng ký và bật/tắt trạng thái hoạt động.</p>
         </div>
         <button
           onClick={() => load(page)}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-gray-50 transition"
         >
           <RefreshCw size={15} />
           Làm mới
@@ -121,9 +122,9 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-gray-400">Tổng user</p>
-          <p className="mt-2 text-2xl font-black text-gray-900">{total}</p>
+        <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Tổng user</p>
+          <p className="mt-2 text-2xl font-black text-slate-900">{total}</p>
         </div>
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-emerald-600">Đang hoạt động</p>
@@ -135,51 +136,44 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
+      <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:items-center">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               id="admin-users-search"
               type="text"
               placeholder="Tìm theo tên, username, email, số điện thoại..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-800 outline-none transition focus:border-primary-400"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-800 outline-none transition focus:border-indigo-400"
             />
           </div>
 
-          <select
-            id="admin-users-status-filter"
+          <AdminSelect
             value={status}
-            onChange={(e) => {
-              setStatus(e.target.value as 'all' | 'active' | 'inactive');
+            onChange={(next) => {
+              setStatus(next);
               setPage(1);
             }}
-            className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-primary-400"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Tạm khóa</option>
-          </select>
-
-          <div className="text-xs text-gray-500 text-right">Trang {page}/{totalPages}</div>
+            options={[{ value: 'all', label: 'Tất cả trạng thái' }, { value: 'active', label: 'Đang hoạt động' }, { value: 'inactive', label: 'Tạm khóa' }]}
+          />
         </div>
       </div>
 
       <div className="space-y-3 md:hidden">
         {loading ? (
-          <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center text-gray-400">Đang tải dữ liệu...</div>
+          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-12 text-center text-slate-400">Đang tải dữ liệu...</div>
         ) : users.length === 0 ? (
-          <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center text-gray-400">Không có người dùng phù hợp</div>
+          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-12 text-center text-slate-400">Không có người dùng phù hợp</div>
         ) : (
           users.map((user) => (
-            <div key={user.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div key={user.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate font-semibold text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500">@{user.username}</p>
-                  <p className="mt-1 text-[11px] text-gray-500">ID #{user.id}</p>
+                  <p className="truncate font-semibold text-slate-900">{user.name}</p>
+                  <p className="text-xs text-slate-500">@{user.username}</p>
+                  <p className="mt-1 text-[11px] text-slate-500">ID #{user.id}</p>
                 </div>
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -192,9 +186,9 @@ export default function AdminUsersPage() {
               </div>
 
               <div className="mt-3 space-y-1 text-sm">
-                <p className="truncate text-gray-800">{user.email}</p>
-                <p className="text-xs text-gray-500">{user.phone || 'Chưa cập nhật số điện thoại'}</p>
-                <p className="text-xs text-gray-500">
+                <p className="truncate text-slate-800">{user.email}</p>
+                <p className="text-xs text-slate-500">{user.phone || 'Chưa cập nhật số điện thoại'}</p>
+                <p className="text-xs text-slate-500">
                   {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('vi-VN') : 'Chưa từng đăng nhập'}
                 </p>
               </div>
@@ -218,10 +212,10 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.05)] md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+            <thead className="bg-gray-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-3 text-left">Người dùng</th>
                 <th className="px-4 py-3 text-left">Liên hệ</th>
@@ -233,31 +227,31 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-16 text-center text-gray-400">Đang tải dữ liệu...</td>
+                  <td colSpan={5} className="px-4 py-16 text-center text-slate-400">Đang tải dữ liệu...</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-16 text-center text-gray-400">Không có người dùng phù hợp</td>
+                  <td colSpan={5} className="px-4 py-16 text-center text-slate-400">Không có người dùng phù hợp</td>
                 </tr>
               ) : (
                 users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50/80">
                     <td className="px-4 py-3 align-top">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-gray-900">{user.name}</span>
-                        <span className="text-xs text-gray-500">@{user.username}</span>
-                        <span className="mt-1 inline-flex w-fit rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+                        <span className="font-semibold text-slate-900">{user.name}</span>
+                        <span className="text-xs text-slate-500">@{user.username}</span>
+                        <span className="mt-1 inline-flex w-fit rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
                           ID #{user.id}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="space-y-0.5">
-                        <p className="text-gray-800">{user.email}</p>
-                        <p className="text-xs text-gray-500">{user.phone || 'Chưa cập nhật số điện thoại'}</p>
+                        <p className="text-slate-800">{user.email}</p>
+                        <p className="text-xs text-slate-500">{user.phone || 'Chưa cập nhật số điện thoại'}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-top text-gray-600">
+                    <td className="px-4 py-3 align-top text-slate-600">
                       {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('vi-VN') : 'Chưa từng đăng nhập'}
                     </td>
                     <td className="px-4 py-3 align-top">
@@ -291,14 +285,14 @@ export default function AdminUsersPage() {
           </table>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-gray-500">Hiển thị tối đa {PAGE_SIZE} user mỗi trang</p>
+        <div className="flex flex-col gap-2 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-slate-500">Hiển thị tối đa {PAGE_SIZE} user mỗi trang</p>
           <div className="flex items-center gap-2">
             <button
               id="admin-users-prev-page"
               disabled={!canPrev}
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Trước
             </button>
@@ -306,7 +300,7 @@ export default function AdminUsersPage() {
               id="admin-users-next-page"
               disabled={!canNext}
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Sau
             </button>

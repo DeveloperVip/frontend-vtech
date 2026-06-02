@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isFocusedEditor = /^\/admin\/(products|posts)\/[^/]+$/.test(pathname) || pathname === '/admin/chats';
 
   useEffect(() => {
     checkAuth().then(() => {
@@ -32,10 +33,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="hidden md:block md:shrink-0">
-        <AdminSidebar />
-      </div>
+    <div className="flex min-h-screen bg-[#f8f9fc]">
+      {!isFocusedEditor && (
+        <div className="hidden md:block md:shrink-0">
+          <AdminSidebar />
+        </div>
+      )}
 
       {sidebarOpen && (
         <button

@@ -14,9 +14,9 @@ export default function Footer({ config }: { config?: Record<string, string> }) 
     >
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.66),transparent_42%)]" />
       <BallpitCanvas
-        className="z-0"
-        count={30}
-        colors={[215, 220, 45, 195, 42]}
+        className="z-0 opacity-100"
+        count={24}
+        colors={[214, 198, 48, 188, 42]}
       />
       <div className="relative z-20 max-w-[1440px] mx-auto px-2 md:px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Brand */}

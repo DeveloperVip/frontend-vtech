@@ -57,27 +57,27 @@ export function applyHeartEffect(
         const burst = () => {
             try {
                 const activeLayer = ensureBurstLayer(el);
-                const baseDuration = Math.max(duration + 380, 2380);
+                const baseDuration = Math.max(duration + 240, 980);
 
                 for (let i = 0; i < count; i++) {
                     const particle = document.createElement('span');
                     const core = document.createElement('span');
-                    const hue = randomBetween(208, 262);
-                    const saturation = randomBetween(92, 100);
-                    const lightness = randomBetween(72, 82);
-                    const driftX = randomBetween(-132, 132);
-                    const driftY = randomBetween(-228, -124);
-                    const rotate = randomBetween(-88, 88);
-                    const delay = randomBetween(0, 180);
-                    const particleSize = randomBetween(size + 4, size + 9);
-                    const coreSize = particleSize * randomBetween(0.32, 0.46);
-                    const startScale = randomBetween(0.82, 1.08);
-                    const midScale = startScale * randomBetween(1.06, 1.14);
-                    const endScale = randomBetween(0.42, 0.68);
-                    const particleDuration = baseDuration + randomBetween(-120, 220);
-                    const coreDuration = baseDuration + randomBetween(40, 280);
+                    const hue = randomBetween(204, 220);
+                    const saturation = randomBetween(72, 86);
+                    const lightness = randomBetween(66, 78);
+                    const driftX = randomBetween(-34, 34);
+                    const driftY = randomBetween(-34, -14);
+                    const rotate = randomBetween(-18, 18);
+                    const delay = randomBetween(0, 90);
+                    const particleSize = randomBetween(size, size + 3);
+                    const coreSize = particleSize * randomBetween(0.5, 0.72);
+                    const startScale = randomBetween(0.72, 0.92);
+                    const midScale = startScale * randomBetween(1.02, 1.08);
+                    const endScale = randomBetween(0.54, 0.76);
+                    const particleDuration = baseDuration + randomBetween(-180, 80);
+                    const coreDuration = baseDuration + randomBetween(-120, 120);
 
-                    particle.textContent = '✦';
+                    particle.textContent = '•';
                     Object.assign(particle.style, {
                         position: 'absolute',
                         left: '50%',
@@ -87,8 +87,8 @@ export function applyHeartEffect(
                         lineHeight: '1',
                         pointerEvents: 'none',
                         userSelect: 'none',
-                        color: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.96)`,
-                        textShadow: `0 0 ${particleSize * 1.2}px hsla(${hue}, 100%, 78%, 0.58), 0 0 ${particleSize * 2.6}px hsla(${hue + 14}, 100%, 74%, 0.18)`,
+                        color: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.58)`,
+                        textShadow: `0 0 ${particleSize * 1.4}px hsla(${hue}, 90%, 78%, 0.2)`,
                         willChange: 'transform, opacity',
                         backfaceVisibility: 'hidden',
                     });
@@ -101,11 +101,11 @@ export function applyHeartEffect(
                         height: `${coreSize}px`,
                         borderRadius: '999px',
                         transform: 'translate3d(-50%, -50%, 0)',
-                        background: `radial-gradient(circle, hsla(${hue - 10}, 100%, 96%, 0.95) 0%, hsla(${hue + 8}, 100%, 78%, 0.42) 58%, transparent 100%)`,
+                        background: `radial-gradient(circle, hsla(${hue - 8}, 90%, 96%, 0.52) 0%, hsla(${hue + 4}, 82%, 76%, 0.2) 62%, transparent 100%)`,
                         pointerEvents: 'none',
                         willChange: 'transform, opacity',
                         backfaceVisibility: 'hidden',
-                        boxShadow: `0 0 ${particleSize * 1.8}px hsla(${hue}, 100%, 76%, 0.24)`,
+                        boxShadow: `0 0 ${particleSize * 1.4}px hsla(${hue}, 82%, 76%, 0.14)`,
                     });
 
                     activeLayer.appendChild(core);

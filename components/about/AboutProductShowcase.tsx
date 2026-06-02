@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 type ProductProject = {
   id: string;
@@ -310,27 +310,76 @@ export default function AboutProductShowcase() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-8">
-          <aside className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur md:p-6">
-            <div className={`mb-5 h-1.5 w-32 rounded-full bg-gradient-to-r ${activeDomain.accent}`} />
-            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-sky-700">Giải pháp đang giới thiệu</p>
-            <h3 className="mt-3 text-2xl font-extrabold text-slate-950">{activeDomain.label}</h3>
-            <p className="mt-3 text-sm leading-7 text-slate-600">{activeDomain.summary}</p>
+        <div className="rounded-[34px] border border-slate-200 bg-white p-2 shadow-[0_34px_110px_rgba(15,23,42,0.14)] md:p-3">
+          <div className="relative">
+            <button
+              id="about-product-open-preview"
+              type="button"
+              onClick={() => setIsZoomOpen(true)}
+              className="group relative block min-h-[520px] w-full cursor-zoom-in overflow-hidden rounded-[28px] bg-slate-950 text-left md:min-h-[680px] lg:min-h-[760px]"
+              aria-label="Phóng to ảnh dự án"
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentProject.id}
+                  src={currentProject.image}
+                  alt={currentProject.title}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.985 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className={`absolute inset-0 h-full w-full transition-transform duration-700 group-hover:scale-[1.025] ${isSvgPreview ? 'bg-white object-contain' : 'object-cover'}`}
+                />
+              </AnimatePresence>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-sky-50 p-4">
-                <p className="text-2xl font-black text-blue-950">{activeDomain.projects.length}</p>
-                <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Hạng mục</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-white/42 via-transparent to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-5 md:p-8 lg:p-10">
+                <div className="max-w-3xl rounded-[24px] border border-white/70 bg-white/72 p-4 text-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-md md:p-5">
+                  <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-sky-700">
+                    {String(slideIndex + 1).padStart(2, '0')} / {String(activeDomain.projects.length).padStart(2, '0')} · {activeDomain.label}
+                  </p>
+                  <h3 className="mt-2 text-2xl font-black leading-tight md:text-4xl lg:text-5xl">{currentProject.title}</h3>
+                  <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-slate-700">{currentProject.description}</p>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {currentProject.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-sky-800"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-              {/* <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-2xl font-black text-blue-950">4K</p>
-                <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-500">Hiển thị</p>
-              </div> */}
-            </div>
 
-            <div className="mt-7">
-              <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">Chọn hạng mục</p>
-              <div className="space-y-2">
+              <span className="absolute right-5 top-5 rounded-full border border-white/25 bg-white/85 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-slate-800 shadow-lg backdrop-blur transition group-hover:bg-white">
+                Nhấn để phóng to
+              </span>
+            </button>
+
+            <button
+              id="about-product-slide-prev"
+              type="button"
+              onClick={handlePrev}
+              className="absolute left-4 top-[260px] z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/45 bg-white/90 text-slate-700 shadow-xl backdrop-blur transition hover:bg-white hover:text-blue-950 md:left-6 md:top-[340px] lg:top-[380px]"
+              aria-label="Ảnh trước"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <button
+              id="about-product-slide-next"
+              type="button"
+              onClick={handleNext}
+              className="absolute right-4 top-[260px] z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/35 bg-blue-950/95 text-white shadow-xl backdrop-blur transition hover:bg-sky-700 md:right-6 md:top-[340px] lg:top-[380px]"
+              aria-label="Ảnh tiếp theo"
+            >
+              <ChevronRight size={22} />
+            </button>
+
+            <div className="mt-4">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                 {activeDomain.projects.map((item, index) => {
                   const active = index === slideIndex;
 
@@ -340,125 +389,30 @@ export default function AboutProductShowcase() {
                       id={`about-product-project-${item.id}`}
                       type="button"
                       onClick={() => setSlideIndex(index)}
-                      className={`group flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-all duration-300 ${active
-                        ? 'border-sky-200 bg-sky-50 text-blue-950 shadow-sm'
-                        : 'border-transparent bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50'
+                      className={`group overflow-hidden rounded-2xl border bg-white p-2 text-left transition-all duration-300 ${active
+                        ? 'border-sky-400 shadow-[0_18px_45px_rgba(14,165,233,0.22)]'
+                        : 'border-slate-200 hover:border-sky-200 hover:shadow-lg'
                         }`}
                       aria-current={active ? 'true' : undefined}
                     >
-                      <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-black ${active ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-500'
-                          }`}
-                      >
-                        {String(index + 1).padStart(2, '0')}
+                      <span className="relative block aspect-[16/10] overflow-hidden rounded-xl bg-slate-100">
+                        <img
+                          src={item.image}
+                          alt=""
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span className={`absolute inset-0 transition ${active ? 'ring-2 ring-inset ring-sky-400' : 'bg-slate-950/0 group-hover:bg-slate-950/8'}`} />
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-extrabold leading-snug">{item.title}</span>
-                        <span className="mt-1 block truncate text-xs font-semibold text-slate-400">{item.tags.join(' • ')}</span>
+                      <span className="mt-2 flex items-center gap-2 px-1 pb-1">
+                        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black ${active ? 'bg-blue-950 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span className="line-clamp-2 text-xs font-extrabold leading-snug text-slate-800">{item.title}</span>
                       </span>
-                      <ArrowRight
-                        size={16}
-                        className={`shrink-0 transition ${active ? 'text-sky-600' : 'text-slate-300 group-hover:translate-x-0.5 group-hover:text-sky-500'}`}
-                      />
                     </button>
                   );
                 })}
-              </div>
-            </div>
-          </aside>
-
-          <div className="rounded-[32px] border border-slate-200 bg-white p-3 shadow-[0_28px_90px_rgba(15,23,42,0.12)] md:p-4">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
-              <button
-                id="about-product-open-preview"
-                type="button"
-                onClick={() => setIsZoomOpen(true)}
-                className={`group relative min-h-[360px] cursor-zoom-in overflow-hidden rounded-[26px] border border-slate-100 ${isSvgPreview ? 'bg-white' : 'bg-slate-50'} md:min-h-[520px] lg:min-h-[640px]`}
-                aria-label="Phóng to ảnh dự án"
-              >
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(14,165,233,0.08)_1px,transparent_1px),linear-gradient(180deg,rgba(14,165,233,0.08)_1px,transparent_1px)] bg-[size:42px_42px]" />
-                <div className="absolute inset-4 rounded-[22px] border border-sky-100/80 bg-white/55 shadow-inner" />
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentProject.id}
-                    initial={{ opacity: 0, scale: 0.98, y: 18 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.98, y: -18 }}
-                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0 flex items-center justify-center p-5 md:p-8"
-                  >
-                    <img
-                      src={currentProject.image}
-                      alt={currentProject.title}
-                      className="max-h-full max-w-full object-contain object-center drop-shadow-[0_22px_42px_rgba(15,23,42,0.22)] transition-transform duration-500 group-hover:scale-[1.015]"
-                    />
-                  </motion.div>
-                </AnimatePresence>
-                <span className="absolute bottom-4 right-4 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur transition group-hover:border-sky-200 group-hover:text-sky-700">
-                  Nhấn để phóng to
-                </span>
-              </button>
-
-              <div className="flex flex-col justify-between rounded-[26px] bg-slate-950 p-5 text-white md:p-6">
-                <div>
-                  <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-sky-300">
-                    {String(slideIndex + 1).padStart(2, '0')} / {String(activeDomain.projects.length).padStart(2, '0')}
-                  </p>
-                  <h3 className="mt-4 text-2xl font-extrabold leading-tight md:text-3xl">{currentProject.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-slate-300">{currentProject.description}</p>
-
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {currentProject.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-8 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    {activeDomain.projects.map((item, index) => {
-                      const active = index === slideIndex;
-                      return (
-                        <button
-                          key={item.id}
-                          id={`about-product-slide-dot-${item.id}`}
-                          type="button"
-                          onClick={() => setSlideIndex(index)}
-                          className={`h-2.5 rounded-full transition-all duration-300 ${active ? 'w-8 bg-sky-400' : 'w-2.5 bg-white/25 hover:bg-white/50'}`}
-                          aria-label={`Đi tới ảnh ${index + 1}`}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      id="about-product-slide-prev"
-                      type="button"
-                      onClick={handlePrev}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20"
-                      aria-label="Ảnh trước"
-                    >
-                      <ChevronLeft size={19} />
-                    </button>
-                    <button
-                      id="about-product-slide-next"
-                      type="button"
-                      onClick={handleNext}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20"
-                      aria-label="Ảnh tiếp theo"
-                    >
-                      <ChevronRight size={19} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </div>            </div>
 
             {isZoomOpen && (
               <div

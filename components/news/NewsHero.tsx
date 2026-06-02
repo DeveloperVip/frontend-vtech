@@ -1,9 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { CalendarDays, Clock, ArrowRight, Tag } from 'lucide-react';
-import BannerEffects from '@/ultilites/BannerEffects';
 import RippleGridBackground from '@/ultilites/RippleGridBackground';
 
 interface Post {
@@ -39,16 +37,10 @@ export default function NewsHero({ post }: { post: Post | null }) {
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
       <RippleGridBackground intensity="bold" />
-      <BannerEffects variant="image" intensity="medium" />
 
       {/* Content */}
       <div className="relative z-10 h-full max-w-[1440px] mx-auto px-2 md:px-4 flex flex-col justify-end pb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="max-w-2xl"
-        >
+        <div className="max-w-2xl">
           {/* Badge */}
           {post.category && (
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full bg-primary-600/90 text-white mb-4 backdrop-blur-sm">
@@ -98,7 +90,7 @@ export default function NewsHero({ post }: { post: Post | null }) {
               <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Featured label */}

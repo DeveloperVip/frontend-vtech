@@ -262,9 +262,9 @@ export default function ProductsClient({ initialProducts, initialPagination, cat
                   <div className="bg-white rounded-2xl border border-gray-100/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full flex flex-col">
 
                     {/* Ảnh Sản Phẩm & Badges */}
-                    <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                    <div className="relative aspect-square bg-gray-100 overflow-hidden">
                       {p.thumbnail ? (
-                        <img src={p.thumbnail} alt={p.name} className="w-full h-full p-4 object-cover group-hover:scale-110 transition-transform duration-500 ease-out" />
+                        <img src={p.thumbnail} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">Chưa có ảnh</div>
                       )}

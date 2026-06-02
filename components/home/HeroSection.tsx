@@ -3,9 +3,6 @@
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
-import BannerEffects from '@/ultilites/BannerEffects';
-import PixelTrailBackground from '@/ultilites/PixelTrailBackground';
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -29,13 +26,44 @@ const itemVariants = {
 export default function HeroSection({ config }: { config?: Record<string, string> }) {
   return (
     <section
-      className="relative min-h-[600px] flex items-center text-white overflow-hidden"
+      className="relative min-h-[600px] flex items-center text-white overflow-hidden bg-[#3f83de]"
       style={{
-        background: 'linear-gradient(90deg,rgba(215, 247, 250, 1) 0%, rgba(69, 133, 230, 1) 0%, rgba(188, 160, 250, 1) 100%, rgba(124, 166, 230, 1) 82%)'
+        background:
+          'radial-gradient(circle at 82% 18%, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.08) 24%, transparent 46%), linear-gradient(135deg, #2f7ed8 0%, #4c89dd 48%, #8d9bec 100%)',
       }}
     >
-      <BannerEffects variant="light" intensity="bold" />
-      <PixelTrailBackground pixelSize={30} fadeMs={1760} density={1} />
+      <motion.div
+        aria-hidden
+        className="absolute -left-28 top-16 h-72 w-72 rounded-full bg-white/15 blur-3xl"
+        animate={{ opacity: [0.28, 0.42, 0.28], scale: [1, 1.06, 1] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        aria-hidden
+        className="absolute bottom-[-120px] right-[18%] h-96 w-96 rounded-full bg-sky-200/18 blur-3xl"
+        animate={{ opacity: [0.18, 0.34, 0.18], x: [0, 18, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0)_34%,rgba(19,68,145,0.12))]" />
+      <motion.div
+        aria-hidden
+        className="absolute left-0 top-[18%] h-px w-[140%] -translate-x-1/4 bg-gradient-to-r from-transparent via-white/55 to-transparent"
+        animate={{ x: ['-18%', '8%', '-18%'], opacity: [0.18, 0.5, 0.18] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        aria-hidden
+        className="absolute left-0 top-[34%] h-px w-[120%] -translate-x-1/3 bg-gradient-to-r from-transparent via-cyan-100/45 to-transparent"
+        animate={{ x: ['10%', '-10%', '10%'], opacity: [0.12, 0.38, 0.12] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        aria-hidden
+        className="absolute bottom-[18%] left-[-10%] h-[2px] w-[62%] rotate-[-8deg] bg-gradient-to-r from-transparent via-white/40 to-transparent blur-[1px]"
+        animate={{ x: ['0%', '42%', '0%'], opacity: [0.08, 0.34, 0.08] }}
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <div aria-hidden className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(circle_at_center,rgba(255,255,255,0.9)_1px,transparent_1.5px)] [background-size:42px_42px]" />
 
       <div className="relative z-10 max-w-[1440px] mx-auto px-2 md:px-4 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full">
         <motion.div

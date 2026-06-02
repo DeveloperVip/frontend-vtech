@@ -17,10 +17,13 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import AdminSelect from '@/components/ui/AdminSelect';
 
 interface Partner {
   id: number;
@@ -48,6 +51,8 @@ const emptyForm = {
 const getErrorMessage = (error: unknown, fallback: string) =>
   (error as { message?: string })?.message || fallback;
 
+const PAGE_SIZE = 8;
+
 const normalizeWebsite = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) return '';
@@ -65,6 +70,7 @@ export default function AdminPartnersPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [filterActive, setFilterActive] = useState<'all' | 'true' | 'false'>('all');
   const [movingId, setMovingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -83,6 +89,10 @@ export default function AdminPartnersPage() {
   useEffect(() => {
     fetchPartners();
   }, [fetchPartners]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterActive]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -194,9 +204,14 @@ export default function AdminPartnersPage() {
     (p.country || '').toLowerCase().includes(search.toLowerCase()) ||
     (p.website || '').toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedPartners = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const pageStart = filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const pageEnd = Math.min(safePage * PAGE_SIZE, filtered.length);
 
   const inputCls =
-    'w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm shadow-sm placeholder-gray-400 transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/10';
+    'w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm placeholder-slate-400 transition-all focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/10';
 
   if (loading) {
     return (
@@ -207,7 +222,7 @@ export default function AdminPartnersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] min-h-0 flex-col gap-4 overflow-hidden sm:h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-2.5rem)] md:h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -240,23 +255,15 @@ export default function AdminPartnersPage() {
             className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-sm shadow-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/10"
           />
         </div>
-        <select
-          value={filterActive}
-          onChange={(e) => setFilterActive(e.target.value as 'all' | 'true' | 'false')}
-          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none"
-        >
-          <option value="all">Tất cả</option>
-          <option value="true">Đang hiển thị</option>
-          <option value="false">Đã ẩn</option>
-        </select>
+        <AdminSelect value={filterActive} onChange={setFilterActive} options={[{ value: 'all', label: 'Tất cả' }, { value: 'true', label: 'Đang hiển thị' }, { value: 'false', label: 'Đã ẩn' }]} />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="min-h-0 flex-1 overflow-auto">
           <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-gray-100 bg-gray-50/95 backdrop-blur">
                 <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                   Đối tác
                 </th>
@@ -284,7 +291,7 @@ export default function AdminPartnersPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((p) => {
+                paginatedPartners.map((p) => {
                   const orderIndex = orderedPartners.findIndex((item) => item.id === p.id);
                   return (
                   <tr key={p.id} className="group hover:bg-gray-50/50 transition-colors">
@@ -395,6 +402,47 @@ export default function AdminPartnersPage() {
             </tbody>
           </table>
         </div>
+
+        {filtered.length > 0 && (
+          <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-bold text-gray-500">
+              Hiển thị <span className="text-gray-900">{pageStart}</span>–<span className="text-gray-900">{pageEnd}</span> trong <span className="text-gray-900">{filtered.length}</span> đối tác
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={safePage === 1}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 shadow-sm transition hover:border-primary-200 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft size={14} /> Trước
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => setPage(pageNumber)}
+                    className={`h-9 min-w-9 rounded-xl px-3 text-xs font-black transition ${safePage === pageNumber
+                      ? 'bg-primary-600 text-white shadow-md shadow-primary-200'
+                      : 'border border-gray-200 bg-white text-gray-500 hover:border-primary-200 hover:text-primary-600'
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={safePage === totalPages}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 shadow-sm transition hover:border-primary-200 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Sau <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
@@ -406,7 +454,7 @@ export default function AdminPartnersPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-slate-900/45"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -415,43 +463,62 @@ export default function AdminPartnersPage() {
               transition={{ duration: 0.2 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-                  <h2 className="text-lg font-bold text-gray-900">
-                    {editingId ? 'Chỉnh sửa đối tác' : 'Thêm đối tác mới'}
-                  </h2>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
+              <div className="relative w-full max-w-3xl overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.22)]" onClick={(e) => e.stopPropagation()}>
+                <div className="sticky top-0 z-10 border-b border-slate-100 bg-white px-6 py-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="mb-1 text-xs font-black uppercase tracking-[0.22em] text-primary-600">Partner Studio</p>
+                      <h2 className="text-2xl font-black tracking-tight text-slate-950">
+                        {editingId ? 'Chỉnh sửa đối tác' : 'Thêm đối tác mới'}
+                      </h2>
+                      <p className="mt-1 text-sm font-medium text-slate-500">Logo gọn, thông tin rõ, thao tác nhanh.</p>
+                    </div>
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="p-6 space-y-5">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                      Tên đối tác <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="VD: Bosch – Đức"
-                      className={inputCls}
-                    />
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
-                    <ImageUpload
-                      label="Logo đối tác"
-                      value={form.logoUrl}
-                      onChange={(url) => setForm({ ...form, logoUrl: url })}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="max-h-[calc(90vh-170px)] overflow-y-auto bg-slate-50 px-6 py-5">
+                  <div className="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+                    <div className="space-y-5 lg:col-start-2">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1.5">Quốc gia</label>
+                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-600">
+                        Tên đối tác <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        placeholder="VD: Bosch – Đức"
+                        className={inputCls}
+                      />
+                    </div>
+
+                  <div className="lg:row-span-5 lg:row-start-1">
+                    <div className="sticky top-3 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4 shadow-inner">
+                      <div className="mb-3 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-black text-slate-900">Logo đối tác</p>
+                          <p className="text-xs font-medium text-slate-400">Khuyên dùng PNG/SVG nền trong.</p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${form.logoUrl ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>{form.logoUrl ? 'Đã có' : 'Trống'}</span>
+                      </div>
+                      <div className="overflow-hidden rounded-[22px] border border-white bg-white p-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)] [&_img]:!object-contain [&_img]:!p-4">
+                        <ImageUpload
+                          label=""
+                          value={form.logoUrl}
+                          onChange={(url) => setForm({ ...form, logoUrl: url })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-600">Quốc gia</label>
                       <input
                         value={form.country}
                         onChange={(e) => setForm({ ...form, country: e.target.value })}
@@ -460,7 +527,7 @@ export default function AdminPartnersPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1.5">Thứ tự</label>
+                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-600">Thứ tự</label>
                       <input
                         type="number"
                         value={form.sortOrder}
@@ -471,7 +538,7 @@ export default function AdminPartnersPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Website</label>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-600">Website</label>
                     <input
                       value={form.website}
                       onChange={(e) => setForm({ ...form, website: e.target.value })}
@@ -481,7 +548,7 @@ export default function AdminPartnersPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Mô tả</label>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-600">Mô tả</label>
                     <textarea
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -491,7 +558,7 @@ export default function AdminPartnersPage() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
                     <div>
                       <p className="text-sm font-bold text-gray-800">Hiển thị trên website</p>
                       <p className="text-xs text-gray-400">Đối tác sẽ xuất hiện ở trang chính</p>
@@ -506,19 +573,21 @@ export default function AdminPartnersPage() {
                       />
                     </button>
                   </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
+                <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-slate-100 bg-white px-6 py-4">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                    className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200 hover:text-slate-900"
                   >
                     Huỷ
                   </button>
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 shadow-md transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="flex items-center gap-2 rounded-2xl bg-primary-700 px-6 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(37,99,235,0.28)] transition-all hover:-translate-y-0.5 hover:bg-primary-800 disabled:opacity-50"
                   >
                     {saving && <Loader2 size={14} className="animate-spin" />}
                     {editingId ? 'Cập nhật' : 'Thêm mới'}

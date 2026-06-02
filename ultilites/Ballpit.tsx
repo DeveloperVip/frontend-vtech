@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 interface Ball {
     x: number;
@@ -6,9 +6,11 @@ interface Ball {
     vx: number;
     vy: number;
     r: number;
-    hue: number;      // HSL hue for rich color
-    sat: number;      // saturation
-    lit: number;      // lightness
+    hue: number;
+    sat: number;
+    lit: number;
+    alpha: number;
+    blur: number;
     mass: number;
 }
 
@@ -70,25 +72,27 @@ export default function BallpitFallback({
             if (ballsRef.current.length === 0) initBalls(w, h);
         };
 
-        // ── Init balls distributed evenly across grid ──────────────────────────
         const initBalls = (w: number, h: number) => {
             ballsRef.current = [];
-            const cols = Math.ceil(Math.sqrt(count * (w / h)));
-            const rows = Math.ceil(count / cols);
+            const footerBand = h * 0.32;
+            const gap = Math.max(34, w / Math.max(count, 1));
+
             for (let i = 0; i < count; i++) {
-                const col = i % cols;
-                const row = Math.floor(i / cols);
-                const r = 18 + Math.random() * 30;
+                const r = 18 + Math.random() * 26;
                 const hue = colors[i % colors.length];
+                const baseX = gap * (i + 0.5);
+
                 ballsRef.current.push({
-                    x: ((col + 0.5 + (Math.random() - 0.5) * 0.8) / cols) * w,
-                    y: ((row + 0.5 + (Math.random() - 0.5) * 0.8) / rows) * h,
-                    vx: (Math.random() - 0.5) * 3,
-                    vy: (Math.random() - 0.5) * 3 + 0.5,
+                    x: Math.min(w - r, Math.max(r, baseX + (Math.random() - 0.5) * gap * 0.72)),
+                    y: h - footerBand * (0.15 + Math.random() * 0.52) + Math.sin(i * 1.7) * 10,
+                    vx: (Math.random() - 0.5) * 0.9,
+                    vy: (Math.random() - 0.5) * 0.7,
                     r,
                     hue,
-                    sat: 85 + Math.random() * 15,
-                    lit: 75 + Math.random() * 15,
+                    sat: 48 + Math.random() * 14,
+                    lit: 74 + Math.random() * 8,
+                    alpha: 0.44 + Math.random() * 0.18,
+                    blur: Math.random() < 0.16 ? 5 + Math.random() * 6 : 0,
                     mass: r * r,
                 });
             }
@@ -131,24 +135,23 @@ export default function BallpitFallback({
             }
         };
 
-        // ── Draw a single glossy 3D ball ───────────────────────────────────────
         const drawBall = (b: Ball) => {
-            const { x, y, r, hue, sat, lit } = b;
+            const { x, y, r, hue, sat, lit, alpha, blur } = b;
 
-            // Drop shadow
             ctx.save();
-            ctx.shadowColor = `hsla(${hue}, ${sat}%, 20%, 0.35)`;
-            ctx.shadowBlur = r * 0.8;
-            ctx.shadowOffsetY = r * 0.3;
+            ctx.globalAlpha = alpha;
+            ctx.filter = blur ? `blur(${blur}px)` : "none";
+            ctx.shadowColor = `hsla(${hue}, ${sat}%, 48%, 0.24)`;
+            ctx.shadowBlur = r * 0.62;
+            ctx.shadowOffsetY = r * 0.2;
 
-            // Main body gradient (bottom-right darker → top-left lighter)
             const bodyGrad = ctx.createRadialGradient(
-                x - r * 0.25, y - r * 0.25, r * 0.05,
-                x, y, r
+                x - r * 0.24, y - r * 0.34, r * 0.08,
+                x + r * 0.12, y + r * 0.22, r * 1.14
             );
-            bodyGrad.addColorStop(0, `hsla(${hue}, ${sat}%, ${lit + 28}%, 0.98)`);
-            bodyGrad.addColorStop(0.5, `hsla(${hue}, ${sat}%, ${lit}%, 0.95)`);
-            bodyGrad.addColorStop(1, `hsla(${hue}, ${sat}%, ${lit - 20}%, 0.90)`);
+            bodyGrad.addColorStop(0, `hsla(${hue}, ${sat}%, 98%, 0.72)`);
+            bodyGrad.addColorStop(0.45, `hsla(${hue}, ${sat}%, ${lit}%, 0.58)`);
+            bodyGrad.addColorStop(1, `hsla(${hue}, ${sat}%, ${lit - 18}%, 0.5)`);
 
             ctx.beginPath();
             ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -156,25 +159,25 @@ export default function BallpitFallback({
             ctx.fill();
             ctx.restore();
 
-            // Specular highlight (top-left white gloss)
-            const specGrad = ctx.createRadialGradient(
-                x - r * 0.32, y - r * 0.36, r * 0.02,
-                x - r * 0.15, y - r * 0.15, r * 0.72
-            );
-            specGrad.addColorStop(0, "rgba(255,255,255,0.85)");
-            specGrad.addColorStop(0.35, "rgba(255,255,255,0.25)");
-            specGrad.addColorStop(1, "rgba(255,255,255,0)");
-
+            ctx.save();
+            ctx.globalAlpha = Math.min(0.9, alpha * 1.55);
+            const rimGrad = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+            rimGrad.addColorStop(0, "rgba(255,255,255,0.62)");
+            rimGrad.addColorStop(0.55, "rgba(255,255,255,0.16)");
+            rimGrad.addColorStop(1, `hsla(${hue}, ${sat}%, 50%, 0.34)`);
+            ctx.lineWidth = Math.max(1.2, r * 0.045);
+            ctx.strokeStyle = rimGrad;
             ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fillStyle = specGrad;
-            ctx.fill();
+            ctx.arc(x, y, r - ctx.lineWidth, 0, Math.PI * 2);
+            ctx.stroke();
 
-            // Small secondary reflection spot (bottom-right)
+            ctx.globalAlpha = Math.min(0.55, alpha * 0.9);
+            ctx.lineWidth = Math.max(1, r * 0.02);
+            ctx.strokeStyle = "rgba(255,255,255,0.48)";
             ctx.beginPath();
-            ctx.arc(x + r * 0.3, y + r * 0.3, r * 0.18, 0, Math.PI * 2);
-            ctx.fillStyle = `hsla(${hue}, 60%, 90%, 0.2)`;
-            ctx.fill();
+            ctx.arc(x - r * 0.18, y - r * 0.22, r * 0.5, Math.PI * 1.05, Math.PI * 1.62);
+            ctx.stroke();
+            ctx.restore();
         };
 
         // ── Main animation loop ────────────────────────────────────────────────
@@ -191,10 +194,10 @@ export default function BallpitFallback({
 
             const mx = mouseRef.current.x;
             const my = mouseRef.current.y;
-            const REPEL_R = 160;
-            const GRAVITY = 0.12;
-            const FRICTION = 0.975;
-            const MAX_SPEED = 14;
+            const REPEL_R = 130;
+            const GRAVITY = 0.035;
+            const FRICTION = 0.988;
+            const MAX_SPEED = 5.5;
 
             for (const b of ballsRef.current) {
                 // Mouse repulsion
@@ -203,7 +206,7 @@ export default function BallpitFallback({
                 const repelRSq = REPEL_R * REPEL_R;
                 if (distSq < repelRSq && distSq > 0) {
                     const md = Math.sqrt(distSq);
-                    const f = ((REPEL_R - md) / REPEL_R) ** 1.5 * 4.5;
+                    const f = ((REPEL_R - md) / REPEL_R) ** 1.8 * 1.6;
                     b.vx += (dx / md) * f;
                     b.vy += (dy / md) * f;
                 }
@@ -220,11 +223,11 @@ export default function BallpitFallback({
                 b.x += b.vx;
                 b.y += b.vy;
 
-                // Wall bounce with damping
-                if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * 0.78; }
-                if (b.x + b.r > w) { b.x = w - b.r; b.vx = -Math.abs(b.vx) * 0.78; }
-                if (b.y - b.r < 0) { b.y = b.r; b.vy = Math.abs(b.vy) * 0.78; }
-                if (b.y + b.r > h) { b.y = h - b.r; b.vy = -Math.abs(b.vy) * 0.78; }
+                const minY = h * 0.56;
+                if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * 0.64; }
+                if (b.x + b.r > w) { b.x = w - b.r; b.vx = -Math.abs(b.vx) * 0.64; }
+                if (b.y - b.r < minY) { b.y = minY + b.r; b.vy = Math.abs(b.vy) * 0.58; }
+                if (b.y + b.r > h + b.r * 0.28) { b.y = h + b.r * 0.28 - b.r; b.vy = -Math.abs(b.vy) * 0.58; }
             }
 
             // Resolve ball collisions (skipped every other frame for perf)

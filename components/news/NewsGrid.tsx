@@ -33,6 +33,32 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
 };
 
+const normalizeText = (value?: string) =>
+  (value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-');
+
+const matchesCategory = (post: Post, category: string) => {
+  if (!category) return true;
+  const categorySlug = post.category?.slug || normalizeText(post.category?.name);
+  return categorySlug === category;
+};
+
+const matchesSearch = (post: Post, query: string) => {
+  const normalizedQuery = normalizeText(query).replace(/-/g, ' ').trim();
+  if (!normalizedQuery) return true;
+
+  return [post.title, post.excerpt, post.category?.name]
+    .map((value) => normalizeText(value).replace(/-/g, ' '))
+    .some((value) => value.includes(normalizedQuery));
+};
+
+const filterPosts = (list: Post[], category: string, query: string) =>
+  list.filter((post) => matchesCategory(post, category) && matchesSearch(post, query));
+
 function PostCardLarge({ post }: { post: Post }) {
   return (
     <Link href={`/tin-tuc/${post.slug}`} className="group block h-full">
@@ -136,30 +162,43 @@ function PostCardSmall({ post }: { post: Post }) {
 }
 
 export default function NewsGrid({ initialPosts, sidebarPosts }: Props) {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [sourcePosts, setSourcePosts] = useState<Post[]>(initialPosts);
   const [activeCategory, setActiveCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const posts = filterPosts(sourcePosts, activeCategory, searchQuery);
+  const hasActiveFilter = Boolean(activeCategory || searchQuery.trim());
   const [hasMore, setHasMore] = useState(initialPosts.length >= 12);
 
-  const handleCategoryChange = async (val: string) => {
-    setActiveCategory(val);
+  const refreshPosts = async (category: string, query: string) => {
     setLoading(true);
     setPage(1);
     try {
-      const params: Record<string, string | number> = { limit: 12, page: 1, published: 'true' };
-      if (val) params.category = val;
+      const params: Record<string, string | number> = { limit: 48, page: 1, published: 'true' };
+      if (query.trim()) params.search = query.trim();
       const res = await fetchPosts(params);
       const data = res.data || [];
-      setPosts(data);
-      setHasMore(data.length >= 12);
+      setSourcePosts(data);
+      setHasMore(!category && !query.trim() && data.length >= 48);
     } catch {
-      // silent
+      setSourcePosts(initialPosts);
+      setHasMore(!category && !query.trim() && initialPosts.length >= 12);
     } finally {
       setTimeout(() => {
         setLoading(false);
-      }, 500);
+      }, 250);
     }
+  };
+
+  const handleCategoryChange = async (val: string) => {
+    setActiveCategory(val);
+    await refreshPosts(val, searchQuery);
+  };
+
+  const handleSearchChange = async (val: string) => {
+    setSearchQuery(val);
+    await refreshPosts(activeCategory, val);
   };
 
   const loadMore = async () => {
@@ -167,12 +206,12 @@ export default function NewsGrid({ initialPosts, sidebarPosts }: Props) {
     setLoading(true);
     try {
       const params: Record<string, string | number> = { limit: 12, page: nextPage, published: 'true' };
-      if (activeCategory) params.category = activeCategory;
+      if (searchQuery.trim()) params.search = searchQuery.trim();
       const res = await fetchPosts(params);
       const data = res.data || [];
-      setPosts((prev) => [...prev, ...data]);
+      setSourcePosts((prev) => [...prev, ...data]);
       setPage(nextPage);
-      setHasMore(data.length >= 12);
+      setHasMore(!hasActiveFilter && data.length >= 12);
     } catch {
       // silent
     } finally {
@@ -185,7 +224,12 @@ export default function NewsGrid({ initialPosts, sidebarPosts }: Props) {
   return (
     <div>
       {/* Category filter */}
-      <NewsCategoryFilter active={activeCategory} onChange={handleCategoryChange} />
+      <NewsCategoryFilter
+        active={activeCategory}
+        query={searchQuery}
+        onChange={handleCategoryChange}
+        onSearch={handleSearchChange}
+      />
 
       <div className="max-w-[1440px] mx-auto px-2 md:px-4 pb-20">
         {loading && posts.length === 0 ? (
@@ -212,12 +256,12 @@ export default function NewsGrid({ initialPosts, sidebarPosts }: Props) {
           <div className="text-center py-24 text-gray-400">
             <p className="text-5xl mb-4">📰</p>
             <p className="text-lg font-medium">Không có bài viết nào</p>
-            <p className="text-sm mt-1">Hãy thử chọn danh mục khác</p>
+            <p className="text-sm mt-1">Hãy thử đổi danh mục hoặc từ khóa tìm kiếm</p>
           </div>
         ) : (
           <AnimatePresence mode="wait" >
             <motion.div
-              key={activeCategory}
+              key={`${activeCategory}-${searchQuery}`}
               variants={containerVariants}
               initial="hidden"
               animate="show"

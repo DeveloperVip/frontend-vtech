@@ -7,13 +7,14 @@ import { adminGet, adminPost, adminPut } from '@/services/adminService';
 import ImageUpload from '@/components/ui/ImageUpload';
 import FileUpload from '@/components/ui/FileUpload';
 import MultiImageUpload from '@/components/ui/MultiImageUpload';
-import { Trash2, Box, RotateCcw, Sparkles, UploadCloud, Loader2, Images, Plus } from 'lucide-react';
+import { Trash2, Box, RotateCcw, Sparkles, UploadCloud, Loader2, Images, Plus, ArrowLeft } from 'lucide-react';
 import { ProductModel3DService } from '@/src/api/generated/services/ProductModel3DService';
 import { ProductsService } from '@/src/api/generated/services/ProductsService';
 import { UploadService } from '@/src/api/generated/services/UploadService';
 import { OpenAPI } from '@/src/api/generated/core/OpenAPI';
 import ProductModelViewer from '@/components/products/components/product-model-viewer';
 import ProductImage360 from '@/components/products/components/product-image-360';
+import AdminSelect from '@/components/ui/AdminSelect';
 
 interface Category { id: number; name: string; }
 
@@ -309,7 +310,7 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const f = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
+  const f = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: field === 'categoryId' && value === 'none' ? '' : value }));
   const fm = (field: string, value: any) => setModel3D((prev) => ({ ...prev, [field]: value }));
 
   const handleUploadProductImages = async (files: FileList) => {
@@ -345,43 +346,58 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
   }, []);
 
   return (
-    <div className="">
-      <div className='flex flex-row justify-between items-center mb-6'>
-        <h1 className="text-2xl font-bold text-gray-800">{isNew ? 'Thêm sản phẩm' : 'Chỉnh sửa sản phẩm'}</h1>
+    <div className="relative -m-4 min-h-[calc(100dvh-2rem)] overflow-hidden bg-[#f6f7f4] p-4 text-stone-900 sm:-m-5 sm:p-5 md:-m-6 md:p-6">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.035] [background-image:radial-gradient(circle_at_center,#1c1917_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="relative mb-5 overflow-hidden rounded-[26px] border border-stone-200/80 bg-[#fbfaf7] px-5 py-4 shadow-[0_18px_50px_rgba(68,64,60,0.08)] sm:px-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <button
+              type="button"
+              onClick={() => router.push('/admin/products')}
+              className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-500 shadow-sm transition hover:-translate-x-0.5 hover:border-stone-300 hover:text-stone-900"
+              aria-label="Quay lại danh sách sản phẩm"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div>
+            <p className="mb-1 text-xs font-black uppercase tracking-[0.22em] text-stone-500">Product Studio</p>
+            <h1 className="text-2xl font-black tracking-tight text-stone-950 sm:text-3xl">{isNew ? 'Thêm sản phẩm' : 'Chỉnh sửa sản phẩm'}</h1>
+            <p className="mt-1 text-sm font-medium text-stone-500">Thông tin chính, hình ảnh và dữ liệu 3D được tách rõ để thao tác nhanh.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-xs font-bold text-stone-500 shadow-sm">
+            <span className={`h-2 w-2 rounded-full ${form.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+            {form.isActive ? 'Đang hiển thị' : 'Đang ẩn'}
+          </div>
+        </div>
       </div>
-      {error && <div className="mb-4 bg-primary-50 border border-primary-200 text-primary-700 text-sm px-4 py-3 rounded-lg">{error}</div>}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-5">
-        <div className='flex flex-row gap-20'>
-          <div className='w-1/2 p-6 flex flex-col gap-5'>
+      {error && <div className="relative mb-4 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm font-semibold text-primary-700 shadow-sm">{error}</div>}
+      <form onSubmit={handleSubmit} className="relative flex flex-col gap-5">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.86fr)]">
+          <div className="flex flex-col gap-5 rounded-[26px] border border-stone-200/80 bg-[#fbfaf7] p-5 shadow-[0_18px_50px_rgba(68,64,60,0.07)] sm:p-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
-              <input className="input-field" value={form.name} onChange={(e) => f('name', e.target.value)} required />
+              <input className="h-12 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5" value={form.name} onChange={(e) => f('name', e.target.value)} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn</label>
-              <textarea className="input-field resize-none" rows={3} value={form.description} onChange={(e) => f('description', e.target.value)} />
+              <textarea className="min-h-[104px] w-full resize-none rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-900 outline-none transition focus:border-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5" rows={3} value={form.description} onChange={(e) => f('description', e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kiểu giá</label>
-                <select className="input-field" value={form.priceType} onChange={(e) => f('priceType', e.target.value)}>
-                  <option value="contact">Liên hệ</option>
-                  <option value="fixed">Giá cố định</option>
-                </select>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">Kiểu giá</label>
+                <AdminSelect value={form.priceType} onChange={(value) => f('priceType', value)} className="w-full" options={[{ value: 'contact', label: 'Liên hệ' }, { value: 'fixed', label: 'Giá cố định' }]} />
               </div>
               {form.priceType === 'fixed' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Giá (VNĐ)</label>
-                  <input type="number" className="input-field" value={form.price} onChange={(e) => f('price', e.target.value)} />
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">Giá (VNĐ)</label>
+                  <input type="number" className="h-10 w-full rounded-xl border border-stone-200 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5" value={form.price} onChange={(e) => f('price', e.target.value)} />
                 </div>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
-              <select className="input-field" value={form.categoryId} onChange={(e) => f('categoryId', e.target.value)}>
-                <option value="">-- Chọn danh mục --</option>
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <label className="mb-1 block text-sm font-semibold text-slate-700">Danh mục</label>
+              <AdminSelect value={form.categoryId || 'none'} onChange={(value) => f('categoryId', value)} className="w-full" options={[{ value: 'none', label: '-- Chọn danh mục --' }, ...categories.map((c) => ({ value: String(c.id), label: c.name }))]} />
             </div>
             <ImageUpload
               label="Ảnh đại diện sản phẩm"
@@ -543,7 +559,7 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
 
 
           {/* Dữ liệu 3D & 360° */}
-          <div className="border-t border-gray-100 pt-6 w-1/2 flex flex-col gap-5">
+          <div className="flex flex-col gap-5 rounded-[26px] border border-stone-200/80 bg-[#fbfaf7] p-5 shadow-[0_18px_50px_rgba(68,64,60,0.07)] sm:p-6 xl:sticky xl:top-6 xl:max-h-[calc(100dvh-3rem)] xl:overflow-y-auto">
             <ImageUpload
               label="Ảnh bìa 3D (Poster)"
               value={model3D.poster}
@@ -787,15 +803,15 @@ export default function ProductFormPage({ params }: { params: { id: string } }) 
             </div>
           </div>
         </div>
-        <div className="w-1/2 ml-auto">
-          <div className="flex gap-3 justify-center max-w-md ml-auto">
-            <button type="submit" disabled={loading}
-              className="btn-primary bg-primary-700 hover:bg-primary-800 focus:ring-primary-500/50 flex-1">
-              {loading ? 'Đang lưu...' : isNew ? 'Tạo sản phẩm' : 'Lưu thay đổi'}
-            </button>
+        <div className="sticky bottom-4 z-20 ml-auto w-full max-w-xl rounded-3xl border border-white/80 bg-white/90 p-2 shadow-[0_22px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+          <div className="flex gap-2">
             <button type="button" onClick={() => router.push('/admin/products')}
-              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition">
+              className="flex-1 rounded-2xl border border-stone-200 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-slate-950">
               Hủy
+            </button>
+            <button type="submit" disabled={loading}
+              className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(28,25,23,0.18)] transition hover:-translate-y-0.5 hover:bg-black disabled:cursor-not-allowed disabled:opacity-60">
+              {loading ? 'Đang lưu...' : isNew ? 'Tạo sản phẩm' : 'Lưu thay đổi'}
             </button>
           </div>
         </div>
