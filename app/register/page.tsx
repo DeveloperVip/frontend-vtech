@@ -13,23 +13,37 @@ export default function RegisterPage() {
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',
     phone: '',
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const setUser = useUserAuthStore((state) => state.setUser);
   const setToken = useUserAuthStore((state) => state.setToken);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone
+        }),
       });
 
       const data = await res.json();
@@ -139,28 +153,55 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="relative">
-              <label className="text-sm font-semibold text-gray-700 mb-1 block">Mật khẩu *</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                  <Lock size={18} />
-                </span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  className="appearance-none rounded-xl relative block w-full pl-10 pr-12 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-gray-50/50"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-primary-600"
-                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                <label className="text-sm font-semibold text-gray-700 mb-1 block">Mật khẩu *</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <Lock size={18} />
+                  </span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    className="appearance-none rounded-xl relative block w-full pl-10 pr-12 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-gray-50/50"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-primary-600"
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="text-sm font-semibold text-gray-700 mb-1 block">Xác nhận mật khẩu *</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <Lock size={18} />
+                  </span>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    className="appearance-none rounded-xl relative block w-full pl-10 pr-12 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-gray-50/50"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-primary-600"
+                    aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
